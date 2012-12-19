@@ -39,6 +39,21 @@ var stats = function(dbot){
             }
             dbot.db.userStats[event.user][event.channel]["freq_hours"][event.time.getHours()] += 1;
             dbot.db.userStats[event.user][event.channel]["total_lines"] += 1;
+            
+            // Channel-centric Stats
+            if(!dbot.db.chanStats.hasOwnProperty(event.channel)){
+                dbot.db.chanStats[event.channel] = {
+                    "total_lines": 0,
+                    "freq_hours": {},
+                };
+                
+                // Initialize hour frequency counters
+                for(var i=0; i<=23; i++){
+                    dbot.db.chanStats[event.channel]["freq_hours"][i] = 0;
+                }
+            }
+            dbot.db.chanStats[event.channel]["freq_hours"][event.time.getHours()] += 1;
+            dbot.db.chanStats[event.channel]["total_lines"] += 1;
         },
         'on': 'PRIVMSG'
     };
