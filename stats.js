@@ -1,11 +1,10 @@
 var stats = function(dbot){
     var name = 'stats';
-    var stats_db = dbot.db.userStats;
 
     var commands = {
         '~lines': function(event){
-            event.reply(dbot.t("lines_spoken", 
-                {"lines": stats_db[event.user.toLowerCase()]["lines"]}
+            event.reply(dbot.t("lines_spoken", {
+                "lines": dbot.db.userStats[event.user][event.channel]["total_lines"]}
             ));
         },
     };
@@ -17,17 +16,29 @@ var stats = function(dbot){
         'ignorable': true,
         'commands': commands,
         'listener': function(event){
-            var stats_db = dbot.db.userStats;
-
-            // Line Counter Listener
-            if(event.message[0] != "~"){
-                if(stats_db.hasOwnProperty(event.user.toLowerCase())){
-                    stats_db[event.user.toLowerCase()]["lines"] += 1;
-                }
-                else{
-                    stats_db[event.user.toLowerCase()] = {"lines": 1};
+            
+            // Ignore command messages
+            if(event.message[0] == "~"){
+                return;
+            }
+            
+            // User-centric Stats
+            if(!dbot.db.userStats.hasOwnProperty(event.user)){
+                dbot.db.userStats[event.user] = {}
+            }
+            if(!dbot.db.userStats[event.user].hasOwnProperty(event.channel)){
+                dbot.db.userStats[event.user][event.channel] = {
+                    "total_lines": 0,
+                    "freq_hours": {},
+                };
+                
+                // Initialize hour frequency counters
+                for(var i=0; i<=23; i++){
+                    dbot.db.userStats[event.user][event.channel]["freq_hours"][i] = 0;
                 }
             }
+            dbot.db.userStats[event.user][event.channel]["freq_hours"][event.time.getHours()] += 1;
+            dbot.db.userStats[event.user][event.channel]["total_lines"] += 1;
         },
         'on': 'PRIVMSG'
     };
