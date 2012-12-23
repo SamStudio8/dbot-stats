@@ -1,5 +1,20 @@
 {
-    "lines_spoken":{
-        "english": "You have spoken {lines} lines in this channel"
+    "user_lines": {
+        "english": "{user} has spoken {lines} messages in {chan} since {start}"
+    },
+    "chan_lines": {
+        "english": "I've read {lines} messages in {chan} since {start}"
+    },
+    "no_data": {
+        "english": "I don't recall seeing {user} in here, are you sure they exist?"
+    },
+    "lines_percent": {
+        "english": "{user} is responsible for {percent}% ({lines}) messages in {chan}"
+    },
+    "hours_active": {
+        "english": "Typically you are most active between {hour}:00 and {hour}:59"
+    },
+    "loudest_user": {
+        "english": "{user} has spoken the most lines in this channel"
     }
 }
