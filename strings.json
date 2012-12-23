@@ -12,7 +12,7 @@
         "english": "{user} is responsible for {percent}% ({lines}) messages in {chan}"
     },
     "hours_active": {
-        "english": "Typically you are most active between {hour}:00 and {hour}:59"
+        "english": "Typically you are most active between {start_hour}:00 and {end_hour}:00"
     },
     "loudest_user": {
         "english": "{user} has spoken the most lines in this channel"

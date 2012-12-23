@@ -58,8 +58,14 @@ var stats = function(dbot){
                     max_index = i;
                 }
             }
+            var start = max_index;
+            var end = max_index + 1;
+            if(start == 23){
+                end = "00";
+            }
             event.reply(dbot.t("hours_active", {
-                "hour": max_index}
+                "start_hour": start,
+                "end_hour": end}
             ));
         },
 
