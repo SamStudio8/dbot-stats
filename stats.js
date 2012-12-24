@@ -156,9 +156,6 @@ var stats = function(dbot){
                         }
                         dbot.db.userStats[event.user][event.channel]["out_mentions"][name] += 1;
                         dbot.db.userStats[name][event.channel]["in_mentions"] += 1;
-
-                        //TODO(samstudio8): Remove debug
-                        event.reply(event.user+" mentioned "+name+" ("+dbot.db.userStats[event.user][event.channel]["out_mentions"][name]+")");
                     }
                 }
             }
