@@ -32,13 +32,13 @@ var stats = function(dbot){
             if(event.params[1]){
                 var input = event.params[1].trim();
                 if(dbot.db.chanStats[event.channel]["users"].hasOwnProperty(input)){
-                    var percent = ((dbot.db.chanStats[event.channel]["users"][input] 
+                    var percent = ((dbot.db.chanStats[event.channel]["users"][input]["lines"]
                         / dbot.db.chanStats[event.channel]["total_lines"])*100);
                     event.reply(dbot.t("lines_percent", {
                         "user": input,
                         "chan": event.channel,
                         "percent": percent.numberFormat(2),
-                        "lines": dbot.db.chanStats[event.channel]["users"][input].numberFormat(0) }
+                        "lines": dbot.db.chanStats[event.channel]["users"][input]["lines"].numberFormat(0) }
                     ));
                 }
                 else{
@@ -108,6 +108,8 @@ var stats = function(dbot){
                 dbot.db.userStats[event.user][event.channel] = {
                     "total_lines": 0,
                     "freq_hours": {},
+                    "in_mentions": 0,
+                    "out_mentions": {},
                     "startstamp": Date.now(),
                 };
                 
@@ -134,11 +136,32 @@ var stats = function(dbot){
                 }
             }
             if(!dbot.db.chanStats[event.channel]["users"].hasOwnProperty(event.user)){
-                dbot.db.chanStats[event.channel]["users"][event.user] = 0;
+                dbot.db.chanStats[event.channel]["users"][event.user] = {
+                    "lines": 0,
+                    "mentions": 0 };
             }
-            dbot.db.chanStats[event.channel]["users"][event.user] += 1;
+            dbot.db.chanStats[event.channel]["users"][event.user]["lines"] += 1;
             dbot.db.chanStats[event.channel]["freq_hours"][event.time.getHours()] += 1;
             dbot.db.chanStats[event.channel]["total_lines"] += 1;
+
+            // Check whether the line includes any mentions
+            if(dbot.db.hasOwnProperty("knownUsers")){
+                // Server key should exist in knownUsers
+                for (var i = 0; i < dbot.db.knownUsers[event.server].users.length; i++){
+                    var name = dbot.db.knownUsers[event.server].users[i];
+                    var toMatch = "\\b"+name+":?\\b"
+                    if(event.message.search(toMatch) > -1){
+                        if(!dbot.db.userStats[event.user][event.channel]["out_mentions"].hasOwnProperty(name)){
+                            dbot.db.userStats[event.user][event.channel]["out_mentions"][name] = 0;
+                        }
+                        dbot.db.userStats[event.user][event.channel]["out_mentions"][name] += 1;
+                        dbot.db.userStats[name][event.channel]["in_mentions"] += 1;
+
+                        //TODO(samstudio8): Remove debug
+                        event.reply(event.user+" mentioned "+name+" ("+dbot.db.userStats[event.user][event.channel]["out_mentions"][name]+")");
+                    }
+                }
+            }
         },
         'on': 'PRIVMSG'
     };
