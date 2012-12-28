@@ -55,6 +55,7 @@ var stats = function(dbot){
                     "chan": event.channel,
                     "percent": percent.numberFormat(2),
                     "lines": dbot.db.chanStats[event.channel]["users"][event.user]["lines"].numberFormat(0) }
+                ));
             }
         },
 
