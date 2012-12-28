@@ -62,23 +62,55 @@ var stats = function(dbot){
         },
 
         '~active': function(event){
-            var max = -1;
-            var max_index = -1;
-            for(var i=0; i<=23; i++) {
-                if(userStats[event.server][event.user][event.channel]["freq_hours"][i] > max){
-                    max = userStats[event.server][event.user][event.channel]["freq_hours"][i];
-                    max_index = i;
+            if(event.params[1]){
+                var input = event.params[1].trim();
+                if(userStats[event.server].hasOwnProperty(input)){
+                    var max = -1;
+                    var max_index = -1;
+                    for(var i=0; i<=23; i++) {
+                        if(userStats[event.server][input][event.channel]["freq_hours"][i] > max){
+                            max = userStats[event.server][input][event.channel]["freq_hours"][i];
+                            max_index = i;
+                        }
+                    }
+                    var start = max_index;
+                    var end = max_index + 1;
+                    if(start == 23){
+                        end = "00";
+                    }
+                    event.reply(dbot.t("hours_active", {
+                        "name": input,
+                        "start_hour": start,
+                        "end_hour": end}
+                    ));
+                }
+                else{
+                    event.reply(dbot.t("no_data", {
+                        "user": input}
+                    ));
                 }
             }
-            var start = max_index;
-            var end = max_index + 1;
-            if(start == 23){
-                end = "00";
+            else{
+                //Channel active
+                var max = -1;
+                var max_index = -1;
+                for(var i=0; i<=23; i++) {
+                    if(chanStats[event.server][event.channel]["freq_hours"][i] > max){
+                        max = chanStats[event.server][event.channel]["freq_hours"][i];
+                        max_index = i;
+                    }
+                }
+                var start = max_index;
+                var end = max_index + 1;
+                if(start == 23){
+                    end = "00";
+                }
+                event.reply(dbot.t("hours_active", {
+                    "name": event.channel,
+                    "start_hour": start,
+                    "end_hour": end}
+                ));
             }
-            event.reply(dbot.t("hours_active", {
-                "start_hour": start,
-                "end_hour": end}
-            ));
         },
 
         '~loudest': function(event){
