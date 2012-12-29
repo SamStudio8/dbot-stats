@@ -15,12 +15,12 @@
         "english": "I don't recall seeing {user} in here, are you sure they exist?"
     },
     "lines_percent": {
-        "english": "{user} is responsible for {percent}% ({lines}) messages in {chan}"
+        "english": "{user} is responsible for {percent}% ({lines}) messages in {chan} since {start}"
     },
     "hours_active": {
-        "english": "Typically {name} is most active between {start_hour}:00 and {end_hour}:00"
+        "english": "Since {start}, {name} is typically most active between {start_hour}:00 and {end_hour}:00 ({tz})"
     },
     "loudest_user": {
-        "english": "{user} has spoken the most lines in this channel"
+        "english": "{user} has spoken the most lines in this channel since {start}"
     }
 }

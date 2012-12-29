@@ -12,6 +12,16 @@ var stats = function(dbot){
         return name.trim().toLowerCase();
     };
 
+    var formatDate = function(d){
+        return new Date(d).toDateString();
+    };
+
+    var getTimezone = function(d){
+        var date = new Date(d);
+        var d = date.toString().match("^(\\w{3} \\w{3} \\d{1,2} \\d{4}) ((\\d{2}:){2}\\d{2}).*\\((.*)\\)$");
+        return d[4];
+    };
+
     var commands = {
         '~lines': function(event){
             if(event.params[1]){
@@ -21,7 +31,7 @@ var stats = function(dbot){
                         "user": input,
                         "chan": event.channel,
                         "lines": userStats[event.server][input][event.channel]["total_lines"].numberFormat(0),
-                        "start": new Date(userStats[event.server][input][event.channel]["startstamp"]).toDateString()}
+                        "start": formatDate(userStats[event.server][input][event.channel]["startstamp"])}
                     ));
                 }
                 else{
@@ -34,7 +44,7 @@ var stats = function(dbot){
                 event.reply(dbot.t("chan_lines", {
                     "chan": event.channel,
                     "lines": chanStats[event.server][event.channel]["total_lines"].numberFormat(0),
-                    "start": new Date(chanStats[event.server][event.channel]["startstamp"]).toDateString()}
+                    "start": formatDate(chanStats[event.server][event.channel]["startstamp"])}
                 ));
             }
         },
@@ -49,7 +59,7 @@ var stats = function(dbot){
                         "words": userStats[event.server][input][event.channel]["total_words"].numberFormat(0),
                         "avg": (userStats[event.server][input][event.channel]["total_words"] 
                             / userStats[event.server][input][event.channel]["total_lines"]).numberFormat(2),
-                        "start": new Date(userStats[event.server][input][event.channel]["startstamp"]).toDateString()}
+                        "start": formatDate(userStats[event.server][input][event.channel]["startstamp"])}
                     ));
                 }
                 else{
@@ -64,7 +74,7 @@ var stats = function(dbot){
                     "words": chanStats[event.server][event.channel]["total_words"].numberFormat(0),
                     "avg": (chanStats[event.server][event.channel]["total_words"] 
                         / chanStats[event.server][event.channel]["total_lines"]).numberFormat(2),
-                    "start": new Date(chanStats[event.server][event.channel]["startstamp"]).toDateString()}
+                    "start": formatDate(chanStats[event.server][event.channel]["startstamp"])}
                 ));
             }
         },
@@ -79,7 +89,8 @@ var stats = function(dbot){
                         "user": input,
                         "chan": event.channel,
                         "percent": percent.numberFormat(2),
-                        "lines": chanStats[event.server][event.channel]["users"][input]["lines"].numberFormat(0) }
+                        "lines": chanStats[event.server][event.channel]["users"][input]["lines"].numberFormat(0),
+                        "start": formatDate(userStats[event.server][input][event.channel]["startstamp"])}
                     ));
                 }
                 else{
@@ -96,7 +107,8 @@ var stats = function(dbot){
                     "user": user,
                     "chan": event.channel,
                     "percent": percent.numberFormat(2),
-                    "lines": chanStats[event.server][event.channel]["users"][user]["lines"].numberFormat(0) }
+                    "lines": chanStats[event.server][event.channel]["users"][user]["lines"].numberFormat(0),
+                    "start": formatDate(chanStats[event.server][event.channel]["startstamp"])}
                 ));
             }
         },
@@ -121,7 +133,9 @@ var stats = function(dbot){
                     event.reply(dbot.t("hours_active", {
                         "name": input,
                         "start_hour": start,
-                        "end_hour": end}
+                        "end_hour": end,
+                        "start": formatDate(userStats[event.server][event.user][event.channel]["startstamp"]),
+                        "tz": getTimezone(userStats[event.server][event.user][event.channel]["startstamp"])}
                     ));
                 }
                 else{
@@ -148,7 +162,9 @@ var stats = function(dbot){
                 event.reply(dbot.t("hours_active", {
                     "name": event.channel,
                     "start_hour": start,
-                    "end_hour": end}
+                    "end_hour": end,
+                    "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
+                    "tz": getTimezone(chanStats[event.server][event.channel]["startstamp"])}
                 ));
             }
         },
@@ -165,7 +181,8 @@ var stats = function(dbot){
                 }
             }
             event.reply(dbot.t("loudest_user", {
-                "user": max_user}
+                "user": max_user,
+                "start": formatDate(chanStats[event.server][event.channel]["startstamp"])}
             ));
         },
     };
@@ -242,17 +259,19 @@ var stats = function(dbot){
 
             // Check whether the line includes any mentions
             if(dbot.db.hasOwnProperty("knownUsers")){
-                // Server key should exist in knownUsers
-                for (var i = 0; i < dbot.db.knownUsers[event.server].users.length; i++){
-                    var name = dbot.db.knownUsers[event.server].users[i].trim().toLowerCase();
-                    if(userStats[event.server].hasOwnProperty(name)){
-                        var toMatch = "\\b"+name+":?\\b"
-                        if(event.message.search(toMatch) > -1){
-                            if(!userStats[event.server][user][event.channel]["out_mentions"].hasOwnProperty(name)){
-                                userStats[event.server][user][event.channel]["out_mentions"][name] = 0;
+                var cat = dbot.db.knownUsers[event.server].users.concat(
+                        Object.keys(dbot.db.knownUsers[event.server].aliases));
+                for (var i = 0; i < cat.length; i++){
+                    var name = cat[i];
+                    var mentioned = linkUser(event.server, name);
+                    if(userStats[event.server].hasOwnProperty(mentioned)){
+                        var toMatch = "( |^)"+name.escape().toLowerCase()+":?(?=\\s|$)";
+                        if(event.message.toLowerCase().search(toMatch) > -1){
+                            if(!userStats[event.server][user][event.channel]["out_mentions"].hasOwnProperty(mentioned)){
+                                userStats[event.server][user][event.channel]["out_mentions"][mentioned] = 0;
                             }
-                            userStats[event.server][user][event.channel]["out_mentions"][name] += 1;
-                            userStats[event.server][name][event.channel]["in_mentions"] += 1;
+                            userStats[event.server][user][event.channel]["out_mentions"][mentioned] += 1;
+                            userStats[event.server][mentioned][event.channel]["in_mentions"] += 1;
                         }
                     }
                 }
