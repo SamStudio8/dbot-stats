@@ -3,10 +3,19 @@ var stats = function(dbot){
     var userStats = dbot.db.userStats;
     var chanStats = dbot.db.chanStats;
 
+    var linkUser = function(server, name){
+        if(dbot.db.hasOwnProperty("knownUsers") && dbot.db.knownUsers.hasOwnProperty(server)){
+            if(dbot.db.knownUsers[server]["aliases"].hasOwnProperty(name)){
+                return dbot.db.knownUsers[server]["aliases"][name].trim().toLowerCase();
+            }
+        }
+        return name.trim().toLowerCase();
+    };
+
     var commands = {
         '~lines': function(event){
             if(event.params[1]){
-                var input = event.params[1].trim().toLowerCase();
+                var input = linkUser(event.server, event.params[1]);
                 if(userStats[event.server].hasOwnProperty(input)){
                     event.reply(dbot.t("user_lines", {
                         "user": input,
@@ -32,7 +41,7 @@ var stats = function(dbot){
 
         '~words': function(event){
             if(event.params[1]){
-                var input = event.params[1].trim().toLowerCase();
+                var input = linkUser(event.server, event.params[1]);
                 if(userStats[event.server].hasOwnProperty(input)){
                     event.reply(dbot.t("user_words", {
                         "user": input,
@@ -62,7 +71,7 @@ var stats = function(dbot){
 
         '~lincent': function(event){
             if(event.params[1]){
-                var input = event.params[1].trim().toLowerCase();
+                var input = linkUser(event.server, event.params[1]);
                 if(chanStats[event.server][event.channel]["users"].hasOwnProperty(input)){
                     var percent = ((chanStats[event.server][event.channel]["users"][input]["lines"]
                         / chanStats[event.server][event.channel]["total_lines"])*100);
@@ -80,11 +89,11 @@ var stats = function(dbot){
                 }
             }
             else{
-                var user = event.user.trim().toLowerCase();
+                var user = linkUser(event.server, event.user);
                 var percent = ((chanStats[event.server][event.channel]["users"][user]["lines"]
                     / chanStats[event.server][event.channel]["total_lines"])*100);
                 event.reply(dbot.t("lines_percent", {
-                    "user": event.user,
+                    "user": user,
                     "chan": event.channel,
                     "percent": percent.numberFormat(2),
                     "lines": chanStats[event.server][event.channel]["users"][user]["lines"].numberFormat(0) }
@@ -94,7 +103,7 @@ var stats = function(dbot){
 
         '~active': function(event){
             if(event.params[1]){
-                var input = event.params[1].trim().toLowerCase();
+                var input = linkUser(event.server, event.params[1]);
                 if(userStats[event.server].hasOwnProperty(input)){
                     var max = -1;
                     var max_index = -1;
@@ -180,7 +189,9 @@ var stats = function(dbot){
                 chanStats[event.server] = {}
             }
 
-            var user = event.user.trim().toLowerCase();
+            //var user = event.user.trim().toLowerCase();
+            var user = linkUser(event.server, event.user);
+
             // User-centric Stats
             if(!userStats[event.server].hasOwnProperty(user)){
                 userStats[event.server][user] = {}
