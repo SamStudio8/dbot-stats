@@ -234,13 +234,15 @@ var stats = function(dbot){
                 // Server key should exist in knownUsers
                 for (var i = 0; i < dbot.db.knownUsers[event.server].users.length; i++){
                     var name = dbot.db.knownUsers[event.server].users[i].trim().toLowerCase();
-                    var toMatch = "\\b"+name+":?\\b"
-                    if(event.message.search(toMatch) > -1){
-                        if(!userStats[event.server][user][event.channel]["out_mentions"].hasOwnProperty(name)){
-                            userStats[event.server][user][event.channel]["out_mentions"][name] = 0;
+                    if(userStats[event.server].hasOwnProperty(name)){
+                        var toMatch = "\\b"+name+":?\\b"
+                        if(event.message.search(toMatch) > -1){
+                            if(!userStats[event.server][user][event.channel]["out_mentions"].hasOwnProperty(name)){
+                                userStats[event.server][user][event.channel]["out_mentions"][name] = 0;
+                            }
+                            userStats[event.server][user][event.channel]["out_mentions"][name] += 1;
+                            userStats[event.server][name][event.channel]["in_mentions"] += 1;
                         }
-                        userStats[event.server][user][event.channel]["out_mentions"][name] += 1;
-                        userStats[event.server][name][event.channel]["in_mentions"] += 1;
                     }
                 }
             }
