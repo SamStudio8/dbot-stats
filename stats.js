@@ -30,6 +30,36 @@ var stats = function(dbot){
             }
         },
 
+        '~words': function(event){
+            if(event.params[1]){
+                var input = event.params[1].trim()
+                if(userStats[event.server].hasOwnProperty(input)){
+                    event.reply(dbot.t("user_words", {
+                        "user": input,
+                        "chan": event.channel,
+                        "words": userStats[event.server][input][event.channel]["total_words"].numberFormat(0),
+                        "avg": (userStats[event.server][input][event.channel]["total_words"] 
+                            / userStats[event.server][input][event.channel]["total_lines"]).numberFormat(2),
+                        "start": new Date(userStats[event.server][input][event.channel]["startstamp"]).toDateString()}
+                    ));
+                }
+                else{
+                    event.reply(dbot.t("no_data", {
+                        "user": input}
+                    ));
+                }
+            }
+            else{
+                event.reply(dbot.t("chan_words", {
+                    "chan": event.channel,
+                    "words": chanStats[event.server][event.channel]["total_words"].numberFormat(0),
+                    "avg": (chanStats[event.server][event.channel]["total_words"] 
+                        / chanStats[event.server][event.channel]["total_lines"]).numberFormat(2),
+                    "start": new Date(chanStats[event.server][event.channel]["startstamp"]).toDateString()}
+                ));
+            }
+        },
+
         '~lincent': function(event){
             if(event.params[1]){
                 var input = event.params[1].trim();
@@ -156,6 +186,7 @@ var stats = function(dbot){
             if(!userStats[event.server][event.user].hasOwnProperty(event.channel)){
                 userStats[event.server][event.user][event.channel] = {
                     "total_lines": 0,
+                    "total_words": 0,
                     "freq_hours": {},
                     "in_mentions": 0,
                     "out_mentions": {},
@@ -169,11 +200,13 @@ var stats = function(dbot){
             }
             userStats[event.server][event.user][event.channel]["freq_hours"][event.time.getHours()] += 1;
             userStats[event.server][event.user][event.channel]["total_lines"] += 1;
+            userStats[event.server][event.user][event.channel]["total_words"] += event.message.split(" ").length;
             
             // Channel-centric Stats
             if(!chanStats[event.server].hasOwnProperty(event.channel)){
                 chanStats[event.server][event.channel] = {
                     "total_lines": 0,
+                    "total_words": 0,
                     "freq_hours": {},
                     "users": {},
                     "startstamp": Date.now(),
@@ -192,6 +225,7 @@ var stats = function(dbot){
             chanStats[event.server][event.channel]["users"][event.user]["lines"] += 1;
             chanStats[event.server][event.channel]["freq_hours"][event.time.getHours()] += 1;
             chanStats[event.server][event.channel]["total_lines"] += 1;
+            chanStats[event.server][event.channel]["total_words"] += event.message.split(" ").length;
 
             // Check whether the line includes any mentions
             if(dbot.db.hasOwnProperty("knownUsers")){

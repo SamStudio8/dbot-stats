@@ -5,6 +5,12 @@
     "chan_lines": {
         "english": "I've read {lines} messages in {chan} since {start}"
     },
+    "user_words": {
+        "english": "{user} has spoken {words} words ({avg} wpl) in {chan} since {start}"
+    },
+    "chan_words": {
+        "english": "I've read {words} words ({avg} wpl) in {chan} since {start}"
+    },
     "no_data": {
         "english": "I don't recall seeing {user} in here, are you sure they exist?"
     },
