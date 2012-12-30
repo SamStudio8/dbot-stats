@@ -24,6 +24,7 @@ var stats = function(dbot){
 
     var commands = {
         '~lines': function(event){
+            if(!userStats.hasOwnProperty(event.server)) return;
             if(event.params[1]){
                 var input = linkUser(event.server, event.params[1]);
                 if(userStats[event.server].hasOwnProperty(input)){
@@ -41,6 +42,7 @@ var stats = function(dbot){
                 }
             }
             else{
+                if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
                 event.reply(dbot.t("chan_lines", {
                     "chan": event.channel,
                     "lines": chanStats[event.server][event.channel]["total_lines"].numberFormat(0),
@@ -50,6 +52,7 @@ var stats = function(dbot){
         },
 
         '~words': function(event){
+            if(!userStats.hasOwnProperty(event.server)) return;
             if(event.params[1]){
                 var input = linkUser(event.server, event.params[1]);
                 if(userStats[event.server].hasOwnProperty(input)){
@@ -69,6 +72,7 @@ var stats = function(dbot){
                 }
             }
             else{
+                if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
                 event.reply(dbot.t("chan_words", {
                     "chan": event.channel,
                     "words": chanStats[event.server][event.channel]["total_words"].numberFormat(0),
@@ -80,6 +84,7 @@ var stats = function(dbot){
         },
 
         '~lincent': function(event){
+            if(!chanStats.hasOwnProperty(event.server)) return;
             if(event.params[1]){
                 var input = linkUser(event.server, event.params[1]);
                 if(chanStats[event.server][event.channel]["users"].hasOwnProperty(input)){
@@ -100,6 +105,7 @@ var stats = function(dbot){
                 }
             }
             else{
+                if(!chanStats[event.server].hasOwnProperty(event.channel)) return;
                 var user = linkUser(event.server, event.user);
                 var percent = ((chanStats[event.server][event.channel]["users"][user]["lines"]
                     / chanStats[event.server][event.channel]["total_lines"])*100);
@@ -114,6 +120,7 @@ var stats = function(dbot){
         },
 
         '~active': function(event){
+            if(!userStats.hasOwnProperty(event.server)) return;
             if(event.params[1]){
                 var input = linkUser(event.server, event.params[1]);
                 if(userStats[event.server].hasOwnProperty(input)){
@@ -145,7 +152,7 @@ var stats = function(dbot){
                 }
             }
             else{
-                //Channel active
+                if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
                 var max = -1;
                 var max_index = -1;
                 for(var i=0; i<=23; i++) {
@@ -170,6 +177,7 @@ var stats = function(dbot){
         },
 
         '~loudest': function(event){
+            if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
             var max = -1;
             var max_user = "nobody";
             for(var user in chanStats[event.server][event.channel]["users"]){
