@@ -105,16 +105,10 @@ var stats = function(dbot){
                 }
             }
             else{
-                var user = linkUser(event.server, event.user);
-                var percent = ((chanStats[event.server][event.channel]["users"][user]["lines"]
-                    / chanStats[event.server][event.channel]["total_lines"])*100);
-                event.reply(dbot.t("lines_percent", {
-                    "user": user,
-                    "chan": event.channel,
-                    "percent": percent.numberFormat(2),
-                    "lines": chanStats[event.server][event.channel]["users"][user]["lines"].numberFormat(0),
-                    "start": formatDate(chanStats[event.server][event.channel]["startstamp"])}
-                ));
+                event.message = '~lincent ' + linkUser(event.server, event.user);
+                event.action = 'PRIVMSG';
+                event.params = event.message.split(' ');
+                dbot.instance.emit(event);
             }
         },
 
