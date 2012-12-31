@@ -238,7 +238,7 @@ var stats = function(dbot){
             }
             userStats[event.server][user][event.channel]["freq_hours"][event.time.getHours()] += 1;
             userStats[event.server][user][event.channel]["total_lines"] += 1;
-            userStats[event.server][user][event.channel]["total_words"] += event.message.split(" ").length;
+            userStats[event.server][user][event.channel]["total_words"] += event.message.split(" ").filter(function(w, i, array) { return w.length > 0; }).length;
             
             // Channel-centric Stats
             if(!chanStats[event.server].hasOwnProperty(event.channel)){
