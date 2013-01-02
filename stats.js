@@ -169,23 +169,27 @@ var stats = function(dbot){
             }
         },
 
-        '~loudest': function(event) {
+        '~loudest': function(event){
             if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
 
             var chan_users = chanStats[event.server][event.channel]["users"];
             var user_sort = Object.prototype.sort(chan_users, function(key, obj) {
-                return obj[key].lines;
+                return ((obj[key].lines / chanStats[event.server][event.channel]["total_lines"])*100);
             });
 
             user_sort = user_sort.slice(user_sort.length - 5).reverse();
 
-            var top_string = "Loudest Users in " + event.channel + ": ";
+            var leaderboard = "";
             for(var i=0;i<user_sort.length;i++) {
-                top_string += user_sort[i][0] + " (" + user_sort[i][1] + "), ";
+                leaderboard += user_sort[i][0] + " (" + user_sort[i][1].numberFormat(2) + "%), ";
             }
-            top_string = top_string.slice(0, -2);
+            leaderboard = leaderboard.slice(0, -2);
 
-            event.reply(top_string);
+            event.reply(dbot.t("loudest_users", {
+                "chan": event.channel,
+                "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
+                "list": leaderboard}
+            ));
         }
     };
 
