@@ -185,7 +185,7 @@ var stats = function(dbot){
                 "user": max_user,
                 "start": formatDate(chanStats[event.server][event.channel]["startstamp"])}
             ));
-        },
+        }
     };
 
     return {
