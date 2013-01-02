@@ -169,7 +169,7 @@ var stats = function(dbot){
             }
         },
 
-        '~loudest': function(event){
+        '~loudest': function(event) {
             if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
 
             var chan_users = chanStats[event.server][event.channel]["users"];
