@@ -22,5 +22,20 @@
     },
     "loudest_users": {
         "english": "Loudest users in {chan} since {start}: {list}"
+    },
+    "in_mentions": {
+        "english": "{user} most mentioned by ({chan}, since {start}): {list}"
+    },
+    "no_in_mentions": {
+        "english": "No-one talks to {user}, what a lonely life :("
+    },
+    "out_mentions": {
+        "english": "{user} mentions most ({chan}, since {start}): {list}"
+    },
+    "no_out_mentions": {
+        "english": "{user} doesn't seem to have mentioned anyone, how sad :("
+    },
+    "popular": {
+        "english": "Most mentioned users in {chan} since {start}: {list}"
     }
 }
