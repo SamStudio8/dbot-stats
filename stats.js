@@ -171,21 +171,22 @@ var stats = function(dbot){
 
         '~loudest': function(event){
             if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
-            var max = -1;
-            var max_user = "nobody";
-            for(var user in chanStats[event.server][event.channel]["users"]){
-                if(chanStats[event.server][event.channel]["users"].hasOwnProperty(user)){
-                    if(chanStats[event.server][event.channel]["users"][user]["lines"] > max){
-                        max = chanStats[event.server][event.channel]["users"][user]["lines"];
-                        max_user = user;
-                    }
-                }
+
+            var chan_users = chanStats[event.server][event.channel]["users"];
+            var user_sort = Object.prototype.sort(chan_users, function(key, obj) {
+                return obj[key].lines;
+            });
+
+            user_sort = user_sort.slice(user_sort.length - 5).reverse();
+
+            var top_string = "Loudest Users in " + event.channel + ": ";
+            for(var i=0;i<user_sort.length;i++) {
+                top_string += user_sort[i][0] + " (" + user_sort[i][1] + "), ";
             }
-            event.reply(dbot.t("loudest_user", {
-                "user": max_user,
-                "start": formatDate(chanStats[event.server][event.channel]["startstamp"])}
-            ));
-        },
+            top_string = top_string.slice(0, -2);
+
+            event.reply(top_string);
+        }
     };
 
     return {
