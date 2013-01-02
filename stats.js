@@ -385,8 +385,11 @@ var stats = function(dbot){
             }
         },
         'fixStats': function(server, name){
+            var newAlias = name;
+            name = name.trim().toLowerCase();
+
             if(dbot.db.userStats[server].hasOwnProperty(name)){
-                var newName = dbot.db.knownUsers[server]["aliases"][name];
+                var newName = dbot.db.knownUsers[server]["aliases"][newAlias].trim().toLowerCase();
                 var userStats = dbot.db.userStats[server];
                 var chanStats = dbot.db.chanStats[server];
 
