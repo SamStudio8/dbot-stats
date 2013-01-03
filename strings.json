@@ -20,7 +20,7 @@
     "hours_active": {
         "english": "Since {start}, {name} is typically most active between {start_hour}:00 and {end_hour}:00 ({tz})"
     },
-    "loudest_users": {
+    "loudest": {
         "english": "Loudest users in {chan} since {start}: {list}"
     },
     "in_mentions": {
