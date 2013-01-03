@@ -192,7 +192,7 @@ var stats = function(dbot){
             var leaderboard_str = leaderboarder(user_sort, 5, "%");
 
             if(leaderboard_str.length > 0){
-                event.reply(dbot.t("verbose", {
+                event.reply(dbot.t("loudest", {
                     "chan": event.channel,
                     "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
                     "list": leaderboard_str}
