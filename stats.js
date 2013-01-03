@@ -197,6 +197,24 @@ var stats = function(dbot){
             ));
         },
 
+        '~verbose': function(event){
+            if(!userStats.hasOwnProperty(event.server)) return;
+
+            var wpl_sort = Object.prototype.sort(userStats[event.server], function(key, obj) {
+                if(obj[key].hasOwnProperty(event.channel)){
+                    return (userStats[event.server][key][event.channel]["total_words"] 
+                        / userStats[event.server][key][event.channel]["total_lines"]).numberFormat(2);
+                }
+                else{ return -1; }
+            });
+
+            event.reply(dbot.t("verbose", {
+                "chan": event.channel,
+                "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
+                "list": leaderboarder(wpl_sort)}
+            ));
+        },
+
         '~popular': function(event){
             if(!userStats.hasOwnProperty(event.server)) return;
 

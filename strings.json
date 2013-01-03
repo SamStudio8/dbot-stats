@@ -37,5 +37,8 @@
     },
     "popular": {
         "english": "Most mentioned users in {chan} since {start}: {list}"
+    },
+    "verbose": {
+      "english": "Most verbose users in {chan} since {start}: {list}"
     }
 }
