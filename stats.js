@@ -189,12 +189,15 @@ var stats = function(dbot){
             var user_sort = Object.prototype.sort(chan_users, function(key, obj) {
                 return ((obj[key].lines / chanStats[event.server][event.channel]["total_lines"])*100).numberFormat(2);
             });
+            var leaderboard_str = leaderboarder(user_sort, 5, "%");
 
-            event.reply(dbot.t("loudest_users", {
-                "chan": event.channel,
-                "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
-                "list": leaderboarder(user_sort, 5, "%")}
-            ));
+            if(leaderboard_str.length > 0){
+                event.reply(dbot.t("verbose", {
+                    "chan": event.channel,
+                    "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
+                    "list": leaderboard_str}
+                ));
+            }
         },
 
         '~verbose': function(event){
@@ -207,12 +210,15 @@ var stats = function(dbot){
                 }
                 else{ return -1; }
             });
+            var leaderboard_str = leaderboarder(wpl_sort, 5, "wpl");
 
-            event.reply(dbot.t("verbose", {
-                "chan": event.channel,
-                "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
-                "list": leaderboarder(wpl_sort)}
-            ));
+            if(leaderboard_str.length > 0){
+                event.reply(dbot.t("verbose", {
+                    "chan": event.channel,
+                    "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
+                    "list": leaderboard_str}
+                ));
+            }
         },
 
         '~popular': function(event){
@@ -224,12 +230,15 @@ var stats = function(dbot){
                 }
                 else{ return -1; }
             });
+            var leaderboard_str = leaderboarder(wpl_sort);
 
-            event.reply(dbot.t("popular", {
-                "chan": event.channel,
-                "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
-                "list": leaderboarder(mentions_sort)}
-            ));
+            if(leaderboard_str.length > 0){
+                event.reply(dbot.t("popular", {
+                    "chan": event.channel,
+                    "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
+                    "list": leaderboard_str}
+                ));
+            }
         },
 
         '~inmentions': function(event){
