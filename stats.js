@@ -185,59 +185,83 @@ var stats = function(dbot){
         '~loudest': function(event){
             if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
 
-            var chan_users = chanStats[event.server][event.channel]["users"];
-            var user_sort = Object.prototype.sort(chan_users, function(key, obj) {
-                return ((obj[key].lines / chanStats[event.server][event.channel]["total_lines"])*100).numberFormat(2);
-            });
-            var leaderboard_str = leaderboarder(user_sort, 5, "%");
+            if(!event.params[1]){
+                var chan_users = chanStats[event.server][event.channel]["users"];
+                var user_sort = Object.prototype.sort(chan_users, function(key, obj) {
+                    return ((obj[key].lines / chanStats[event.server][event.channel]["total_lines"])*100).numberFormat(2);
+                });
+                var leaderboard_str = leaderboarder(user_sort, 5, "%");
 
-            if(leaderboard_str.length > 0){
-                event.reply(dbot.t("loudest", {
-                    "chan": event.channel,
-                    "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
-                    "list": leaderboard_str}
-                ));
+                if(leaderboard_str.length > 0){
+                    event.reply(dbot.t("loudest", {
+                        "chan": event.channel,
+                        "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
+                        "list": leaderboard_str}
+                    ));
+                }
+            }
+            else{
+                event.message = '~lincent ' + linkUser(event.server, event.params[1]);
+                event.action = 'PRIVMSG';
+                event.params = event.message.split(' ');
+                dbot.instance.emit(event);
             }
         },
 
         '~verbose': function(event){
             if(!userStats.hasOwnProperty(event.server)) return;
 
-            var wpl_sort = Object.prototype.sort(userStats[event.server], function(key, obj) {
-                if(obj[key].hasOwnProperty(event.channel)){
-                    return (userStats[event.server][key][event.channel]["total_words"] 
-                        / userStats[event.server][key][event.channel]["total_lines"]).numberFormat(2);
-                }
-                else{ return -1; }
-            });
-            var leaderboard_str = leaderboarder(wpl_sort, 5, "wpl");
+            if(!event.params[1]){
+                var wpl_sort = Object.prototype.sort(userStats[event.server], function(key, obj) {
+                    if(obj[key].hasOwnProperty(event.channel)){
+                        return (userStats[event.server][key][event.channel]["total_words"] 
+                            / userStats[event.server][key][event.channel]["total_lines"]).numberFormat(2);
+                    }
+                    else{ return -1; }
+                });
+                var leaderboard_str = leaderboarder(wpl_sort, 5, "wpl");
 
-            if(leaderboard_str.length > 0){
-                event.reply(dbot.t("verbose", {
-                    "chan": event.channel,
-                    "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
-                    "list": leaderboard_str}
-                ));
+                if(leaderboard_str.length > 0){
+                    event.reply(dbot.t("verbose", {
+                        "chan": event.channel,
+                        "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
+                        "list": leaderboard_str}
+                    ));
+                }
+            }
+            else{
+                event.message = '~words ' + linkUser(event.server, event.params[1]);
+                event.action = 'PRIVMSG';
+                event.params = event.message.split(' ');
+                dbot.instance.emit(event);
             }
         },
 
         '~popular': function(event){
             if(!userStats.hasOwnProperty(event.server)) return;
 
-            var mentions_sort = Object.prototype.sort(userStats[event.server], function(key, obj) {
-                if(obj[key].hasOwnProperty(event.channel)){
-                    return obj[key][event.channel]["in_mentions"];
-                }
-                else{ return -1; }
-            });
-            var leaderboard_str = leaderboarder(wpl_sort);
+            if(!event.params[1]){
+                var mentions_sort = Object.prototype.sort(userStats[event.server], function(key, obj) {
+                    if(obj[key].hasOwnProperty(event.channel)){
+                        return obj[key][event.channel]["in_mentions"];
+                    }
+                    else{ return -1; }
+                });
+                var leaderboard_str = leaderboarder(mentions_sort);
 
-            if(leaderboard_str.length > 0){
-                event.reply(dbot.t("popular", {
-                    "chan": event.channel,
-                    "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
-                    "list": leaderboard_str}
-                ));
+                if(leaderboard_str.length > 0){
+                    event.reply(dbot.t("popular", {
+                        "chan": event.channel,
+                        "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
+                        "list": leaderboard_str}
+                    ));
+                }
+            }
+            else{
+                event.message = '~inmentions ' + linkUser(event.server, event.params[1]);
+                event.action = 'PRIVMSG';
+                event.params = event.message.split(' ');
+                dbot.instance.emit(event);
             }
         },
 
