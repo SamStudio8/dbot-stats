@@ -37,13 +37,15 @@ var stats = function(dbot){
 
     var api = {
         'fixStats': function(server, name){
+            if(!dbot.db.userStats.hasOwnProperty(server) || !dbot.db.chanStats.hasOwnProperty(server)) return;
+                
+            var userStats = dbot.db.userStats[server];
+            var chanStats = dbot.db.chanStats[server];
             var newAlias = name;
             name = name.trim().toLowerCase();
 
-            if(dbot.db.userStats[server].hasOwnProperty(name)){
-                var newName = dbot.db.knownUsers[server]["aliases"][newAlias].trim().toLowerCase();
-                var userStats = dbot.db.userStats[server];
-                var chanStats = dbot.db.chanStats[server];
+            if(userStats.hasOwnProperty(name)){
+                var newName = dbot.api.users.resolveUser(newAlias).trim().toLowerCase();
 
                 // Rename userStats key
                 userStats[newName] = userStats[name];
