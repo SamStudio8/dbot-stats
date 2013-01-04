@@ -3,15 +3,6 @@ var stats = function(dbot){
     var userStats = dbot.db.userStats;
     var chanStats = dbot.db.chanStats;
 
-    var linkUser = function(server, name){
-        if(dbot.db.hasOwnProperty("knownUsers") && dbot.db.knownUsers.hasOwnProperty(server)){
-            if(dbot.db.knownUsers[server]["aliases"].hasOwnProperty(name)){
-                return dbot.db.knownUsers[server]["aliases"][name].trim().toLowerCase();
-            }
-        }
-        return name.trim().toLowerCase();
-    };
-
     var formatDate = function(d){
         return new Date(d).toDateString();
     };
@@ -45,7 +36,7 @@ var stats = function(dbot){
             name = name.trim().toLowerCase();
 
             if(userStats.hasOwnProperty(name)){
-                var newName = dbot.api.users.resolveUser(newAlias).trim().toLowerCase();
+                var newName = dbot.api.users.resolveUser(server, newAlias, true);
 
                 // Rename userStats key
                 userStats[newName] = userStats[name];
@@ -82,7 +73,7 @@ var stats = function(dbot){
         '~lines': function(event){
             if(!userStats.hasOwnProperty(event.server)) return;
             if(event.params[1]){
-                var input = linkUser(event.server, event.params[1]);
+                var input = dbot.api.users.resolveUser(event.server, event.params[1], true);
                 if(userStats[event.server].hasOwnProperty(input) && userStats[event.server][input].hasOwnProperty(event.channel)){
                     event.reply(dbot.t("user_lines", {
                         "user": input,
@@ -110,7 +101,7 @@ var stats = function(dbot){
         '~words': function(event){
             if(!userStats.hasOwnProperty(event.server)) return;
             if(event.params[1]){
-                var input = linkUser(event.server, event.params[1]);
+                var input = dbot.api.users.resolveUser(event.server, event.params[1], true);
                 if(userStats[event.server].hasOwnProperty(input) && userStats[event.server][input].hasOwnProperty(event.channel)){
                     event.reply(dbot.t("user_words", {
                         "user": input,
@@ -142,7 +133,7 @@ var stats = function(dbot){
         '~lincent': function(event){
             if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
             if(event.params[1]){
-                var input = linkUser(event.server, event.params[1]);
+                var input = dbot.api.users.resolveUser(event.server, event.params[1], true);
                 if(chanStats[event.server][event.channel]["users"].hasOwnProperty(input)){
                     var percent = ((chanStats[event.server][event.channel]["users"][input]["lines"]
                         / chanStats[event.server][event.channel]["total_lines"])*100);
@@ -161,7 +152,7 @@ var stats = function(dbot){
                 }
             }
             else{
-                event.message = '~lincent ' + linkUser(event.server, event.user);
+                event.message = '~lincent ' + dbot.api.users.resolveUser(event.server, event.user, true);
                 event.action = 'PRIVMSG';
                 event.params = event.message.split(' ');
                 dbot.instance.emit(event);
@@ -171,7 +162,7 @@ var stats = function(dbot){
         '~active': function(event){
             if(!userStats.hasOwnProperty(event.server)) return;
             if(event.params[1]){
-                var input = linkUser(event.server, event.params[1]);
+                var input = dbot.api.users.resolveUser(event.server, event.params[1], true);
                 if(userStats[event.server].hasOwnProperty(input) && userStats[event.server][input].hasOwnProperty(event.channel)){
                     var max = -1;
                     var max_index = -1;
@@ -244,7 +235,7 @@ var stats = function(dbot){
                 }
             }
             else{
-                event.message = '~lincent ' + linkUser(event.server, event.params[1]);
+                event.message = '~lincent ' + dbot.api.users.resolveUser(event.server, event.params[1], true);
                 event.action = 'PRIVMSG';
                 event.params = event.message.split(' ');
                 dbot.instance.emit(event);
@@ -273,7 +264,7 @@ var stats = function(dbot){
                 }
             }
             else{
-                event.message = '~words ' + linkUser(event.server, event.params[1]);
+                event.message = '~words ' + dbot.api.users.resolveUser(event.server, event.params[1], true);
                 event.action = 'PRIVMSG';
                 event.params = event.message.split(' ');
                 dbot.instance.emit(event);
@@ -301,7 +292,7 @@ var stats = function(dbot){
                 }
             }
             else{
-                event.message = '~inmentions ' + linkUser(event.server, event.params[1]);
+                event.message = '~inmentions ' + dbot.api.users.resolveUser(event.server, event.params[1], true);
                 event.action = 'PRIVMSG';
                 event.params = event.message.split(' ');
                 dbot.instance.emit(event);
@@ -311,7 +302,7 @@ var stats = function(dbot){
         '~inmentions': function(event){
             if(!userStats.hasOwnProperty(event.server)) return;
             if(event.params[1]){
-                var user = linkUser(event.server, event.params[1]);
+                var user = dbot.api.users.resolveUser(event.server, event.params[1], true);
                 if(userStats[event.server].hasOwnProperty(user)){
                     var mentions_sort = Object.prototype.sort(userStats[event.server], function(key, obj) {
                         if(obj[key].hasOwnProperty(event.channel) && obj[key][event.channel]["out_mentions"].hasOwnProperty(user)){
@@ -342,7 +333,7 @@ var stats = function(dbot){
                 }
             }
             else{
-                event.message = '~inmentions ' + linkUser(event.server, event.user);
+                event.message = '~inmentions ' + dbot.api.users.resolveUser(event.server, event.user, true);
                 event.action = 'PRIVMSG';
                 event.params = event.message.split(' ');
                 dbot.instance.emit(event);
@@ -352,7 +343,7 @@ var stats = function(dbot){
         '~outmentions': function(event){
             if(!userStats.hasOwnProperty(event.server)) return;
             if(event.params[1]){
-                var user = linkUser(event.server, event.params[1]);
+                var user = dbot.api.users.resolveUser(event.server, event.params[1], true);
                 if(userStats[event.server].hasOwnProperty(user) && userStats[event.server][user][event.channel]){
                     var mentions = userStats[event.server][user][event.channel]["out_mentions"];
                     var mentions_sort = Object.prototype.sort(mentions, function(key, obj) {
@@ -381,7 +372,7 @@ var stats = function(dbot){
                 }
             }
             else{
-                event.message = '~outmentions ' + linkUser(event.server, event.user);
+                event.message = '~outmentions ' + dbot.api.users.resolveUser(event.server, event.user, true);
                 event.action = 'PRIVMSG';
                 event.params = event.message.split(' ');
                 dbot.instance.emit(event);
@@ -409,7 +400,7 @@ var stats = function(dbot){
             }
 
             //var user = event.user.trim().toLowerCase();
-            var user = linkUser(event.server, event.user);
+            var user = dbot.api.users.resolveUser(event.server, event.user, true);
 
             // User-centric Stats
             if(!userStats[event.server].hasOwnProperty(user)){
@@ -464,7 +455,7 @@ var stats = function(dbot){
                         Object.keys(dbot.db.knownUsers[event.server].aliases));
                 for (var i = 0; i < cat.length; i++){
                     var name = cat[i];
-                    var mentioned = linkUser(event.server, name);
+                    var mentioned = dbot.api.users.resolveUser(event.server, name, true);
                     if(userStats[event.server].hasOwnProperty(mentioned) && userStats[event.server][mentioned][event.channel]){
                         var toMatch = "( |^)"+name.escape().toLowerCase()+":?(?=\\s|$)";
                         if(event.message.toLowerCase().search(toMatch) > -1){
