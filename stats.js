@@ -35,6 +35,47 @@ var stats = function(dbot){
         return leaderboard.slice(0, -2);
     };
 
+    var api = {
+        'fixStats': function(server, name){
+            var newAlias = name;
+            name = name.trim().toLowerCase();
+
+            if(dbot.db.userStats[server].hasOwnProperty(name)){
+                var newName = dbot.db.knownUsers[server]["aliases"][newAlias].trim().toLowerCase();
+                var userStats = dbot.db.userStats[server];
+                var chanStats = dbot.db.chanStats[server];
+
+                // Rename userStats key
+                userStats[newName] = userStats[name];
+                delete userStats[name];
+
+                // Rename keys in all out_mentions on this server
+                for(var curr_user in userStats){
+                    if(userStats.hasOwnProperty(curr_user)){
+                        for(var curr_channel in userStats[curr_user]){
+                            if(!userStats[curr_user].hasOwnProperty(curr_channel)) continue;
+                            if(userStats[curr_user][curr_channel]["out_mentions"].hasOwnProperty(name)){
+                                userStats[curr_user][curr_channel]["out_mentions"][newName] = userStats[curr_user][curr_channel]["out_mentions"][name];
+                                delete userStats[curr_user][curr_channel]["out_mentions"][name];
+                            }
+                        }
+                    }
+                }
+
+                // Rename user in all chanStats keys for this server
+                for(var curr_chan in chanStats){
+                    if(chanStats.hasOwnProperty(curr_chan)){
+                        if(chanStats[curr_chan]["users"].hasOwnProperty(name)){
+                            chanStats[curr_chan]["users"][newName] = chanStats[curr_chan]["users"][name];
+                            delete chanStats[curr_chan]["users"][name];
+                        }
+                    }
+                }
+                dbot.save();
+            }
+        }
+    };
+
     var commands = {
         '~lines': function(event){
             if(!userStats.hasOwnProperty(event.server)) return;
@@ -435,44 +476,7 @@ var stats = function(dbot){
                 }
             }
         },
-        'fixStats': function(server, name){
-            var newAlias = name;
-            name = name.trim().toLowerCase();
-
-            if(dbot.db.userStats[server].hasOwnProperty(name)){
-                var newName = dbot.db.knownUsers[server]["aliases"][newAlias].trim().toLowerCase();
-                var userStats = dbot.db.userStats[server];
-                var chanStats = dbot.db.chanStats[server];
-
-                // Rename userStats key
-                userStats[newName] = userStats[name];
-                delete userStats[name];
-
-                // Rename keys in all out_mentions on this server
-                for(var curr_user in userStats){
-                    if(userStats.hasOwnProperty(curr_user)){
-                        for(var curr_channel in userStats[curr_user]){
-                            if(!userStats[curr_user].hasOwnProperty(curr_channel)) continue;
-                            if(userStats[curr_user][curr_channel]["out_mentions"].hasOwnProperty(name)){
-                                userStats[curr_user][curr_channel]["out_mentions"][newName] = userStats[curr_user][curr_channel]["out_mentions"][name];
-                                delete userStats[curr_user][curr_channel]["out_mentions"][name];
-                            }
-                        }
-                    }
-                }
-
-                // Rename user in all chanStats keys for this server
-                for(var curr_chan in chanStats){
-                    if(chanStats.hasOwnProperty(curr_chan)){
-                        if(chanStats[curr_chan]["users"].hasOwnProperty(name)){
-                            chanStats[curr_chan]["users"][newName] = chanStats[curr_chan]["users"][name];
-                            delete chanStats[curr_chan]["users"][name];
-                        }
-                    }
-                }
-                dbot.save();
-            }
-        },
+        'api': api,
         'on': 'PRIVMSG'
     };
 };
