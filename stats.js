@@ -25,6 +25,7 @@ var stats = function(dbot){
         return leaderboard.slice(0, -2);
     };
 
+    //TODO(samstudio8): There must be a less terrible way to resolve the weekday
     var days = {'1':"Monday", '2':"Tueday", '3':"Wednesday", '4':"Thursday", '5':"Friday", '6':"Saturday", '0':"Sunday"};
 
     var api = {
@@ -52,16 +53,6 @@ var stats = function(dbot){
                                 userStats[curr_user][curr_channel]["out_mentions"][newName] = userStats[curr_user][curr_channel]["out_mentions"][name];
                                 delete userStats[curr_user][curr_channel]["out_mentions"][name];
                             }
-                        }
-                    }
-                }
-
-                // Rename user in all chanStats keys for this server
-                for(var curr_chan in chanStats){
-                    if(chanStats.hasOwnProperty(curr_chan)){
-                        if(chanStats[curr_chan]["users"].hasOwnProperty(name)){
-                            chanStats[curr_chan]["users"][newName] = chanStats[curr_chan]["users"][name];
-                            delete chanStats[curr_chan]["users"][name];
                         }
                     }
                 }
@@ -135,14 +126,14 @@ var stats = function(dbot){
             if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
             if(event.params[1]){
                 var input = dbot.api.users.resolveUser(event.server, event.params[1], true);
-                if(chanStats[event.server][event.channel]["users"].hasOwnProperty(input)){
-                    var percent = ((chanStats[event.server][event.channel]["users"][input]["lines"]
+                if(userStats[event.server].hasOwnProperty(input) && userStats[event.server][input].hasOwnProperty(event.channel)){
+                    var percent = ((userStats[event.server][input][event.channel]["total_lines"]
                         / chanStats[event.server][event.channel]["total_lines"])*100);
                     event.reply(dbot.t("lines_percent", {
                         "user": input,
                         "chan": event.channel,
                         "percent": percent.numberFormat(2),
-                        "lines": chanStats[event.server][event.channel]["users"][input]["lines"].numberFormat(0),
+                        "lines": userStats[event.server][input][event.channel]["total_lines"].numberFormat(0),
                         "start": formatDate(userStats[event.server][input][event.channel]["startstamp"])}
                     ));
                 }
@@ -238,9 +229,12 @@ var stats = function(dbot){
             if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
 
             if(!event.params[1]){
-                var chan_users = chanStats[event.server][event.channel]["users"];
-                var user_sort = Object.prototype.sort(chan_users, function(key, obj) {
-                    return ((obj[key].lines / chanStats[event.server][event.channel]["total_lines"])*100).numberFormat(2);
+                var user_sort = Object.prototype.sort(userStats[event.server], function(key, obj) {
+                    if(obj[key].hasOwnProperty(event.channel)){
+                        return ((obj[key][event.channel].total_lines 
+                            / chanStats[event.server][event.channel]["total_lines"])*100).numberFormat(2);
+                    }
+                    else{ return -1; }
                 });
                 var leaderboard_str = leaderboarder(user_sort, 5, "%");
 
@@ -434,7 +428,6 @@ var stats = function(dbot){
                 }
                 return freq;
             },
-            "users": {},
             "startstamp": function(){
                 return Date.now() 
             }
@@ -540,7 +533,6 @@ var stats = function(dbot){
                     "total_lines": 0,
                     "total_words": 0,
                     "freq": {},
-                    "users": {},
                     "startstamp": Date.now(),
                 };
                 
@@ -552,11 +544,6 @@ var stats = function(dbot){
                     }
                 }
             }
-            if(!chanStats[event.server][event.channel]["users"].hasOwnProperty(user)){
-                chanStats[event.server][event.channel]["users"][user] = {
-                    "lines": 0};
-            }
-            chanStats[event.server][event.channel]["users"][user]["lines"] += 1;
             chanStats[event.server][event.channel]["freq"][event.time.getDay()][event.time.getHours()] += 1;
             chanStats[event.server][event.channel]["total_lines"] += 1;
             chanStats[event.server][event.channel]["total_words"] += event.message.split(" ").length;
