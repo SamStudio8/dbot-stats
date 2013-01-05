@@ -1,5 +1,4 @@
 var stats = function(dbot){
-    var name = 'stats';
     var userStats = dbot.db.userStats;
     var chanStats = dbot.db.chanStats;
 
@@ -159,6 +158,7 @@ var stats = function(dbot){
             }
         },
 
+/*
         '~active': function(event){
             if(!userStats.hasOwnProperty(event.server)) return;
             if(event.params[1]){
@@ -215,6 +215,7 @@ var stats = function(dbot){
                 ));
             }
         },
+*/
 
         '~loudest': function(event){
             if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
@@ -380,8 +381,94 @@ var stats = function(dbot){
         }
     };
 
+    var integrityCheck = function(){
+        //TODO(samstudio8): Also delete no longer required fields
+        
+        var user_structure = {
+            "total_lines": 0,
+            "total_words": 0,
+            "freq": function(){
+                var freq = {};
+                for(var i=0; i<=6; i++){
+                    freq[i] = {};
+                    for(var j=0; j<=23; j++){
+                        freq[i][j] = 0;
+                    }
+                }
+                return freq;
+            },
+            "in_mentions": 0,
+            "out_mentions": {},
+            "startstamp": function(){
+                return Date.now() 
+            },
+        };
+
+        var chan_structure = {
+            "total_lines": 0,
+            "total_words": 0,
+            "freq": function(){
+                var freq = {};
+                for(var i=0; i<=6; i++){
+                    freq[i] = {};
+                    for(var j=0; j<=23; j++){
+                        freq[i][j] = 0;
+                    }
+                }
+                return freq;
+            },
+            "users": {},
+            "startstamp": function(){
+                return Date.now() 
+            }
+        };
+
+        var userStats = dbot.db.userStats;
+        for(var curr_server in userStats){
+            if(!userStats.hasOwnProperty(curr_server)) continue;
+            for(var curr_user in userStats[curr_server]){
+                if(!userStats[curr_server].hasOwnProperty(curr_user)) continue;
+                for(var curr_chan in userStats[curr_server][curr_user]){
+                    if(!userStats[curr_server][curr_user].hasOwnProperty(curr_chan)) continue;
+                    for(var field in user_structure){
+                        if(!user_structure.hasOwnProperty(field)) continue;
+                        if(!userStats[curr_server][curr_user][curr_chan].hasOwnProperty(field)){
+                            if(typeof(user_structure[field]) == "function"){
+                                userStats[curr_server][curr_user][curr_chan][field] = user_structure[field].apply();
+                            }
+                            else{
+                                userStats[curr_server][curr_user][curr_chan][field] = user_structure[field];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        var chanStats = dbot.db.chanStats;
+        for(var curr_server in chanStats){
+            if(!chanStats.hasOwnProperty(curr_server)) continue;
+            for(var curr_chan in chanStats[curr_server]){
+                if(!chanStats[curr_server].hasOwnProperty(curr_chan)) continue;
+                for(var field in chan_structure){
+                    if(!chan_structure.hasOwnProperty(field)) continue;
+                    if(!chanStats[curr_server][curr_chan].hasOwnProperty(field)){
+                        if(typeof(user_structure[field]) == "function"){
+                            chanStats[curr_server][curr_chan][field] = chan_structure[field].apply();
+                        }
+                        else{
+                            chanStats[curr_server][curr_chan][field] = chan_structure[field];
+                        }
+                    }
+                }
+            }
+        }
+        dbot.save();
+    };
+
     return {
         'name': 'stats',
+        'version': '0.08',
         'ignorable': true,
         'commands': commands,
         'listener': function(event){
@@ -407,37 +494,45 @@ var stats = function(dbot){
                 userStats[event.server][user] = {}
             }
             if(!userStats[event.server][user].hasOwnProperty(event.channel)){
+                //TODO(samstudio8): populateUser function
                 userStats[event.server][user][event.channel] = {
                     "total_lines": 0,
                     "total_words": 0,
-                    "freq_hours": {},
+                    "freq": {},
                     "in_mentions": 0,
                     "out_mentions": {},
                     "startstamp": Date.now(),
                 };
                 
-                // Initialize hour frequency counters
-                for(var i=0; i<=23; i++){
-                    userStats[event.server][user][event.channel]["freq_hours"][i] = 0;
+                // Initialize frequency counters
+                for(var i=0; i<=6; i++){
+                    userStats[event.server][user][event.channel]["freq"][i] = {};
+                    for(var j=0; j<=23; j++){
+                        userStats[event.server][user][event.channel]["freq"][i][j] = 0;
+                    }
                 }
             }
-            userStats[event.server][user][event.channel]["freq_hours"][event.time.getHours()] += 1;
+            userStats[event.server][user][event.channel]["freq"][event.time.getDay()][event.time.getHours()] += 1;
             userStats[event.server][user][event.channel]["total_lines"] += 1;
             userStats[event.server][user][event.channel]["total_words"] += event.message.split(" ").filter(function(w, i, array) { return w.length > 0; }).length;
             
             // Channel-centric Stats
             if(!chanStats[event.server].hasOwnProperty(event.channel)){
+                //TODO(samstudio8): populateChannel function
                 chanStats[event.server][event.channel] = {
                     "total_lines": 0,
                     "total_words": 0,
-                    "freq_hours": {},
+                    "freq": {},
                     "users": {},
                     "startstamp": Date.now(),
                 };
                 
-                // Initialize hour frequency counters
-                for(var i=0; i<=23; i++){
-                    chanStats[event.server][event.channel]["freq_hours"][i] = 0;
+                // Initialize frequency counters
+                for(var i=0; i<=6; i++){
+                    chanStats[event.server][event.channel]["freq"][i] = {};
+                    for(var j=0; j<=23; j++){
+                        chanStats[event.server][event.channel]["freq"][i][j] = 0;
+                    }
                 }
             }
             if(!chanStats[event.server][event.channel]["users"].hasOwnProperty(user)){
@@ -445,7 +540,7 @@ var stats = function(dbot){
                     "lines": 0};
             }
             chanStats[event.server][event.channel]["users"][user]["lines"] += 1;
-            chanStats[event.server][event.channel]["freq_hours"][event.time.getHours()] += 1;
+            chanStats[event.server][event.channel]["freq"][event.time.getDay()][event.time.getHours()] += 1;
             chanStats[event.server][event.channel]["total_lines"] += 1;
             chanStats[event.server][event.channel]["total_words"] += event.message.split(" ").length;
 
@@ -470,6 +565,7 @@ var stats = function(dbot){
             }
         },
         'api': api,
+        'onLoad': integrityCheck(),
         'on': 'PRIVMSG'
     };
 };
