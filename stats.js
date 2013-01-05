@@ -463,7 +463,7 @@ var stats = function(dbot){
                 for(var field in chan_structure){
                     if(!chan_structure.hasOwnProperty(field)) continue;
                     if(!chanStats[curr_server][curr_chan].hasOwnProperty(field)){
-                        if(typeof(user_structure[field]) == "function"){
+                        if(typeof(chan_structure[field]) == "function"){
                             chanStats[curr_server][curr_chan][field] = chan_structure[field].apply();
                         }
                         else{
