@@ -18,7 +18,7 @@
         "english": "{user} is responsible for {percent}% ({lines}) messages in {chan} since {start}"
     },
     "hours_active": {
-        "english": "Since {start}, {name} is typically most active between {start_hour}:00 and {end_hour}:00 ({tz})"
+        "english": "Since {start}, {name} is typically most active between {start_hour}:00 and {end_hour}:00 ({tz}) on {day}s"
     },
     "loudest": {
         "english": "Loudest users in {chan} since {start}: {list}"

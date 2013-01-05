@@ -25,6 +25,8 @@ var stats = function(dbot){
         return leaderboard.slice(0, -2);
     };
 
+    var days = {'1':"Monday", '2':"Tueday", '3':"Wednesday", '4':"Thursday", '5':"Friday", '6':"Saturday", '0':"Sunday"};
+
     var api = {
         'fixStats': function(server, name){
             if(!dbot.db.userStats.hasOwnProperty(server) || !dbot.db.chanStats.hasOwnProperty(server)) return;
@@ -158,32 +160,40 @@ var stats = function(dbot){
             }
         },
 
-/*
         '~active': function(event){
             if(!userStats.hasOwnProperty(event.server)) return;
+
             if(event.params[1]){
                 var input = dbot.api.users.resolveUser(event.server, event.params[1], true);
                 if(userStats[event.server].hasOwnProperty(input) && userStats[event.server][input].hasOwnProperty(event.channel)){
                     var max = -1;
-                    var max_index = -1;
-                    for(var i=0; i<=23; i++) {
-                        if(userStats[event.server][input][event.channel]["freq_hours"][i] > max){
-                            max = userStats[event.server][input][event.channel]["freq_hours"][i];
-                            max_index = i;
+                    var max_day = -1;
+                    var max_hour = -1;
+                    for(var i=0; i<=6; i++) {
+                        for(var j=0; j<=23; j++){
+                            if(userStats[event.server][input][event.channel]["freq"][i][j] > max){
+                                max = userStats[event.server][input][event.channel]["freq"][i][j];
+                                max_day = i;
+                                max_hour = j;
+                            }
                         }
                     }
-                    var start = max_index;
-                    var end = max_index + 1;
+                    var start = max_hour;
+                    var end = max_hour + 1;
                     if(start == 23){
                         end = "00";
                     }
-                    event.reply(dbot.t("hours_active", {
-                        "name": input,
-                        "start_hour": start,
-                        "end_hour": end,
-                        "start": formatDate(userStats[event.server][event.user][event.channel]["startstamp"]),
-                        "tz": getTimezone(userStats[event.server][event.user][event.channel]["startstamp"])}
-                    ));
+
+                    if(max > 0){
+                        event.reply(dbot.t("hours_active", {
+                            "name": input,
+                            "day": days[max_day],
+                            "start_hour": start,
+                            "end_hour": end,
+                            "start": formatDate(userStats[event.server][input][event.channel]["startstamp"]),
+                            "tz": getTimezone(userStats[event.server][input][event.channel]["startstamp"])}
+                        ));
+                    }
                 }
                 else{
                     event.reply(dbot.t("no_data", {
@@ -194,28 +204,35 @@ var stats = function(dbot){
             else{
                 if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
                 var max = -1;
-                var max_index = -1;
-                for(var i=0; i<=23; i++) {
-                    if(chanStats[event.server][event.channel]["freq_hours"][i] > max){
-                        max = chanStats[event.server][event.channel]["freq_hours"][i];
-                        max_index = i;
+                var max_day = -1;
+                var max_hour = -1;
+                for(var i=0; i<=6; i++) {
+                    for(var j=0; j<=23; j++){
+                        if(chanStats[event.server][event.channel]["freq"][i][j] > max){
+                            max = chanStats[event.server][event.channel]["freq"][i][j];
+                            max_day = i;
+                            max_hour = j;
+                        }
                     }
                 }
-                var start = max_index;
-                var end = max_index + 1;
+                var start = max_hour;
+                var end = max_hour + 1;
                 if(start == 23){
                     end = "00";
                 }
-                event.reply(dbot.t("hours_active", {
-                    "name": event.channel,
-                    "start_hour": start,
-                    "end_hour": end,
-                    "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
-                    "tz": getTimezone(chanStats[event.server][event.channel]["startstamp"])}
-                ));
+
+                if(max > 0){
+                    event.reply(dbot.t("hours_active", {
+                        "name": event.channel,
+                        "day": days[max_day],
+                        "start_hour": start,
+                        "end_hour": end,
+                        "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
+                        "tz": getTimezone(chanStats[event.server][event.channel]["startstamp"])}
+                    ));
+                }
             }
         },
-*/
 
         '~loudest': function(event){
             if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
