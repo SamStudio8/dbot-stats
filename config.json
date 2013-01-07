@@ -1,3 +1,4 @@
 {
-    "dbKeys": [ "userStats", "chanStats" ]
+    "dbKeys": [ "userStats", "chanStats" ],
+    "help": "https://github.com/SamStudio8/stats/blob/master/README.md"
 }
