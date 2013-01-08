@@ -478,7 +478,6 @@ var stats = function(dbot){
 
     return {
         'name': 'stats',
-        'version': '0.1',
         'ignorable': true,
         'commands': commands,
         'listener': function(event){
