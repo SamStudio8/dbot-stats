@@ -2,8 +2,17 @@ var stats = function(dbot){
     var userStats = dbot.db.userStats;
     var chanStats = dbot.db.chanStats;
 
-    var formatDate = function(d){
-        return new Date(d).toDateString();
+    var formatDate = function(d, fullForm){
+        if(!fullForm){
+            return new Date(d).toDateString();
+        }
+        else{
+            return new Date(d).toString();
+        }
+    };
+
+    var dateActive = function(last, interval){
+        return((Date.now() - last) < interval*60000);
     };
 
     var getTimezone = function(d){
@@ -31,7 +40,7 @@ var stats = function(dbot){
     var api = {
         'fixStats': function(server, name){
             if(!dbot.db.userStats.hasOwnProperty(server) || !dbot.db.chanStats.hasOwnProperty(server)) return;
-                
+
             var userStats = dbot.db.userStats[server];
             var chanStats = dbot.db.chanStats[server];
             var newAlias = name;
@@ -58,6 +67,37 @@ var stats = function(dbot){
                 }
                 dbot.save();
             }
+        },
+
+        'isActive': function(request){
+            // If inLast is not defined, default to ten minutes
+            var inLast = typeof request.inLast !== "undefined" ? inLast : 10;
+
+            if(request.server){
+                if(!dbot.db.userStats.hasOwnProperty(request.server) || !dbot.db.chanStats.hasOwnProperty(request.server)) return false;
+
+                if(request.user && request.channel){
+                    var user = dbot.api.users.resolveUser(request.server, request.user, true);
+                    if(userStats[request.server].hasOwnProperty(user) && userStats[request.server][user].hasOwnProperty(request.channel)){
+                        return dateActive(userStats[request.server][user][request.channel]["last"], inLast);
+                    }
+                }
+                else if(request.user){
+                    var user = dbot.api.users.resolveUser(request.server, request.user, true);
+                    if(!userStats[request.server].hasOwnProperty(user)) return false;
+                    for(var curr_chan in userStats[request.server][user]){
+                        if(userStats[request.server][user].hasOwnProperty(curr_chan)){
+                            if(dateActive(userStats[request.server][user][curr_chan]["last"], inLast)) return true;
+                        }
+                    }
+                }
+                else if(request.channel){
+                    if(!chanStats[request.server].hasOwnProperty(request.channel)) return false;
+                    return dateActive(chanStats[request.server][request.channel]["last"], inLast);
+                }
+            }
+            // Request was missing a component or dbKey does not exist
+            return false;
         }
     };
 
@@ -389,6 +429,26 @@ var stats = function(dbot){
                 event.params = event.message.split(' ');
                 dbot.instance.emit(event);
             }
+        },
+
+        '~last': function(event){
+            if(!userStats.hasOwnProperty(event.server)) return;
+            if(event.params[1]){
+                var user = dbot.api.users.resolveUser(event.server, event.params[1], true);
+                if(userStats[event.server].hasOwnProperty(user) && userStats[event.server][user][event.channel]){
+                    event.reply(user+" last seen: "+formatDate(userStats[event.server][user][event.channel]["last"], 1));
+                }
+                else{
+                    event.reply(dbot.t("no_data", {
+                        "user": user}
+                    ));
+                }
+            }
+            else{
+                if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
+                event.reply(event.channel+" last activity: "+formatDate(chanStats[event.server][event.channel]["last"], 1));
+            }
+            
         }
     };
 
@@ -411,8 +471,11 @@ var stats = function(dbot){
             "in_mentions": 0,
             "out_mentions": {},
             "startstamp": function(){
-                return Date.now() 
+                return Date.now();
             },
+            "last": function(){
+                return Date.now();
+            }
         };
 
         var chan_structure = {
@@ -429,7 +492,10 @@ var stats = function(dbot){
                 return freq;
             },
             "startstamp": function(){
-                return Date.now() 
+                return Date.now();
+            },
+            "last": function(){
+                return Date.now();
             }
         };
 
@@ -511,6 +577,7 @@ var stats = function(dbot){
                     "in_mentions": 0,
                     "out_mentions": {},
                     "startstamp": Date.now(),
+                    "last": Date.now()
                 };
                 
                 // Initialize frequency counters
@@ -524,6 +591,7 @@ var stats = function(dbot){
             userStats[event.server][user][event.channel]["freq"][event.time.getDay()][event.time.getHours()] += 1;
             userStats[event.server][user][event.channel]["total_lines"] += 1;
             userStats[event.server][user][event.channel]["total_words"] += event.message.split(" ").filter(function(w, i, array) { return w.length > 0; }).length;
+            userStats[event.server][user][event.channel]["last"] = event.time.getTime();
             
             // Channel-centric Stats
             if(!chanStats[event.server].hasOwnProperty(event.channel)){
@@ -533,6 +601,7 @@ var stats = function(dbot){
                     "total_words": 0,
                     "freq": {},
                     "startstamp": Date.now(),
+                    "last": Date.now()
                 };
                 
                 // Initialize frequency counters
@@ -546,6 +615,7 @@ var stats = function(dbot){
             chanStats[event.server][event.channel]["freq"][event.time.getDay()][event.time.getHours()] += 1;
             chanStats[event.server][event.channel]["total_lines"] += 1;
             chanStats[event.server][event.channel]["total_words"] += event.message.split(" ").length;
+            chanStats[event.server][event.channel]["last"] = event.time.getTime();
 
             // Check whether the line includes any mentions
             if(dbot.db.hasOwnProperty("knownUsers")){
