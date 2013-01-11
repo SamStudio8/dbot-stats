@@ -37,6 +37,33 @@ var stats = function(dbot){
     //TODO(samstudio8): There must be a less terrible way to resolve the weekday
     var days = {'1':"Monday", '2':"Tueday", '3':"Wednesday", '4':"Thursday", '5':"Friday", '6':"Saturday", '0':"Sunday"};
 
+    //TODO(samstudio8):
+    //I am not proud of this!
+    //Create an internal API to perform calculations such as wpl/lincent
+    //that can be used by the commands as well as the API
+    var validAPIFields = {
+        //Note that the existence of relevant stats dbKeys will have 
+        //already been determined outside of the call to a validField
+        //function and there is no need to check their existence here
+        "total_lines": function(req){
+            return userStats[req.server][req.primary][req.channel]["total_lines"].numberFormat(0);
+        },
+        "total_words": function(req){
+            return userStats[req.server][req.primary][req.channel]["total_words"].numberFormat(0);
+        },
+        "lincent": function(req){
+            return (((userStats[req.server][req.primary][req.channel]["total_lines"]
+                    / chanStats[req.server][req.channel]["total_lines"])*100).numberFormat(2))+"%";
+        },
+        "wpl": function(req){
+            return ((userStats[req.server][req.primary][req.channel]["total_words"]
+                    / userStats[req.server][req.primary][req.channel]["total_lines"]).numberFormat(2))+" wpl";
+        },
+        "in_mentions": function(req){
+            return userStats[req.server][req.primary][req.channel]["in_mentions"].numberFormat(0);
+        }
+    };
+
     var api = {
         'fixStats': function(server, name){
             if(!dbot.db.userStats.hasOwnProperty(server) || !dbot.db.chanStats.hasOwnProperty(server)) return;
@@ -98,6 +125,45 @@ var stats = function(dbot){
             }
             // Request was missing a component or dbKey does not exist
             return false;
+        },
+
+        //TODO(samstudio8)
+        //The input for this function should be an object, this will also make
+        //handling calls to any required validAPIField functions below tidier
+        'getUserStats': function(server, nick, channel, fields){
+            var primary = dbot.api.users.resolveUser(server, nick, true);
+            var user = {
+                'display': primary,
+                'primary': primary
+            } 
+            if(primary != nick.toLowerCase()){
+                user.display = nick.toLowerCase()+" ("+primary+")";
+            }
+            if(!chanStats.hasOwnProperty(server) || !userStats.hasOwnProperty(server)) return user;
+
+            if(!fields){
+                //Use all available fields if a specific list was not defined
+                var fields = Object.keys(validAPIFields);
+            }
+            if(!userStats[server].hasOwnProperty(primary)
+                    || !userStats[server][primary].hasOwnProperty(channel)
+                    || !chanStats[server].hasOwnProperty(channel)) return user;
+            for(var i=0; i<fields.length; i++){
+                var curr_field = fields[i].toLowerCase();
+                if(validAPIFields.hasOwnProperty(curr_field)){
+                    if(typeof(validAPIFields[curr_field]) == "function"){
+                        var request = {
+                            "server": server,
+                            "primary": primary,
+                            "channel": channel};
+                        user[curr_field] = validAPIFields[curr_field](request);
+                    }
+                    else{
+                        user[curr_field] = userStats[server][primary][channel][curr_field];
+                    }
+                }
+            }
+            return user;
         }
     };
 
