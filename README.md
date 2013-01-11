@@ -45,12 +45,33 @@ Display the timestamp of the last recorded message from a particular user.
 Without the optional user parameter the bot will display the timestamp of the last recorded message in the current channel.
 
 ##API
-###fixStats(\<server\>, \<userAlias\>)
-Resolve \<userAlias\> to its primary nick on \<server\> and rename all \<userAlias\> dbKeys in \<server\> to the resolved nick.
+###getUserStats(\<server\>, \<user\>, \<channel\>, [field(s)])
+Return all the statstics for a particular user on a given server and channel in an object.
+Optionally you may list one or more of the supported API fields (as defined below) if you do not want to return them all.
 
-###isActive({\<server\>, \<user\> | \<channel\> | \<user\> \<channel\>, [inLast]})
+The snippet below describes the API fields currently supported by the command but note that the object will *always* contain the "display" and "primary" fields.
+Elements listed in the fields parameter that do not match a supported API field will be ignored.
+Unless otherwise specified each stats field relates to the user's activity in the channel and server defined by the parameters.
+
+```
+{
+  "display": Either the alias and primary nick in the form 'alias (primary)' or simply the primary nick,
+  "primary": The primary nick of the profile,
+  
+  "total_lines": Number of lines the user has spoken,
+  "total_words": Number of words the user has spoken,
+  "lincent": Percentage of lines in the channel the user is responsible for,
+  "wpl": Average words per line,
+  "in_mentions": Number of times the user has been mentioned in this channel
+}
+```
+
+###isActive({\<server\>, \<user\> | \<channel\> | \<user\> \<channel\>, [inLast=10]})
 Report whether a message from a [user in any channel | channel itself | user in a specific channel] was recorded in inLast minutes.
 inLast defaults to ten minutes. Note the parameters are to be delivered within an object.
+
+###fixStats(\<server\>, \<userAlias\>)
+Resolve \<userAlias\> to its primary nick on \<server\> and rename all \<userAlias\> dbKeys in \<server\> to the resolved nick.
 
 ##Licence
 stats is distributed under the MIT license, see LICENCE for further information.
