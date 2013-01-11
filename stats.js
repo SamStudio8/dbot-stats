@@ -549,7 +549,7 @@ var stats = function(dbot){
         'listener': function(event){
             
             // Ignore command messages
-            if(event.message[0] == "~" || event.user == dbot.config.name){
+            if(event.message[0] == "~"){
                 return;
             }
             
