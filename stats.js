@@ -2,6 +2,174 @@ var stats = function(dbot){
     var userStats = dbot.db.userStats;
     var chanStats = dbot.db.chanStats;
 
+    var _ = require('underscore')._
+
+    var user_structure = {
+        "lines": {
+            "name": "lines",
+            "format": function(data){
+                return data.numberFormat(0);
+            }
+        },
+        "words": {
+            "name": "words",
+            "format": function(data){
+                return data.numberFormat(0);
+            }
+        },
+        "freq": {
+            "name": "freq",
+            "def": function(){ 
+                var freq = {};
+                for(var i=0; i<=6; i++){
+                    freq[i] = {};
+                    for(var j=0; j<=23; j++){
+                        freq[i][j] = 0;
+                    }
+                }
+                return freq;
+            },
+            "format": function(data, day, hour){
+                if(!day || !hour) return -1;
+                if(day >= 0 && day <= 6 && hour >= 0 && hour <= 23){
+                    return data[day][hour].numberFormat(0);
+                }
+                else{
+                    return -1;
+                }
+            }
+        },
+        "in_mentions": {
+            "name": "in_mentions",
+            "format": function(data){
+                return data.numberFormat(0);
+            }
+        },
+        "out_mentions": {
+            "name": "out_mentions",
+            "def": {},
+            "format": function(data, user){
+                if(!user || !_has(data, user)) return -1;
+                return data[user].numberFormat(0);
+            }
+        },
+        "init": {
+            "name": "init",
+            "def": function(){
+                return Date.now();
+            },
+            "toString": function(){ 
+                return formatDate(this.stamp);
+            }
+        }
+    };
+
+    var chan_structure = {
+        "lines": {
+            "name": "lines",
+            "format": function(data){
+                return data.numberFormat(0);
+            }
+        },
+        "words": {
+            "name": "words",
+            "format": function(data){
+                return data.numberFormat(0);
+            }
+        },
+        "freq": {
+            "name": "freq",
+            "def": function(){ 
+                var freq = {};
+                for(var i=0; i<=6; i++){
+                    freq[i] = {};
+                    for(var j=0; j<=23; j++){
+                        freq[i][j] = 0;
+                    }
+                }
+                return freq;
+            },
+            "format": function(data, day, hour){
+                if(!day || !hour) return -1;
+                if(day >= 0 && day <= 6 && hour >= 0 && hour <= 23){
+                    return data[day][hour].numberFormat(0);
+                }
+                else{
+                    return -1;
+                }
+            }
+        },
+        "init": {
+            "name": "init",
+            "def": function(){
+                return Date.now();
+            },
+            "toString": function(){ 
+                return formatDate(this.stamp);
+            }
+        }
+    };
+
+    var prefabFields = ["init"];
+    var fieldFactory = function(key, toField){
+
+        // Handle the default value for the field
+        var def = 0;
+        if(toField.def){
+            if(_.isFunction(toField.def)){
+                def = toField.def.apply();
+            }
+            else{
+                def = toField.def;
+            }
+        }
+
+        // If a field was manufactured before arriving at the factory, complete 
+        // its data value and output it in the state in which it arrived.
+        if(_.contains(prefabFields, key)){
+            toField["data"] = def;
+            return toField;
+        }
+
+        return {
+            "name": toField.name,
+            "data": def,
+            "format": toField.format,
+            "toString": function(){
+                return this.format(this.data);
+            },
+            "inc": function(){
+                // Increment the data field if it is a number
+                if(!isNaN(parseFloat(this.data)) && isFinite(this.data)){
+                    this.data += 1;
+                }
+                else{
+                    console.log("[STAT][WARN] Attempt to increment a non-numeric field: "+this.name);
+                }
+            },
+            "time": {
+                "init": {
+                    "stamp": Date.now(),
+                    "toString": function(){ return formatDate(this.stamp); }
+                },
+                "last": {
+                    "stamp": Date.now(),
+                    "toString": function(){ return formatDate(this.stamp); }
+                }
+            }
+        }
+    };
+
+    var fieldFactoryUserProduct = {};
+    _.each(user_structure, function(value, key, obj){
+        return fieldFactoryUserProduct[key] = fieldFactory(key, value);
+    });
+
+    var fieldFactoryChanProduct = {};
+    _.each(chan_structure, function(value, key, obj){
+        return fieldFactoryChanProduct[key] = fieldFactory(key, value);
+    });
+
     var formatDate = function(d, fullForm){
         if(!fullForm){
             return new Date(d).toDateString();
@@ -168,6 +336,16 @@ var stats = function(dbot){
     };
 
     var commands = {
+        '~test': function(event){
+
+            event.reply(dbot.t("user_lines", {
+                "user": "test",
+                "chan": event.channel,
+                "lines": user_test.lines, //Use API!
+                "start": user_test.lines.time.init}
+            ));
+        },
+
         '~lines': function(event){
             if(!userStats.hasOwnProperty(event.server)) return;
             if(event.params[1]){
@@ -520,91 +698,19 @@ var stats = function(dbot){
 
     var integrityCheck = function(){
         //TODO(samstudio8): Also delete no longer required fields
-        
-        var user_structure = {
-            "total_lines": 0,
-            "total_words": 0,
-            "freq": function(){
-                var freq = {};
-                for(var i=0; i<=6; i++){
-                    freq[i] = {};
-                    for(var j=0; j<=23; j++){
-                        freq[i][j] = 0;
-                    }
-                }
-                return freq;
-            },
-            "in_mentions": 0,
-            "out_mentions": {},
-            "startstamp": function(){
-                return Date.now();
-            },
-            "last": function(){
-                return Date.now();
-            }
-        };
+        _.each(userStats, function(server, serverName){
+            _.each(userStats[serverName], function(user, userName){
+                _.each(userStats[serverName][userName], function(chan, chanName){
+                    _.defaults(userStats[serverName][userName][chanName], fieldFactoryUserProduct);
+                });
+            });
+        });
 
-        var chan_structure = {
-            "total_lines": 0,
-            "total_words": 0,
-            "freq": function(){
-                var freq = {};
-                for(var i=0; i<=6; i++){
-                    freq[i] = {};
-                    for(var j=0; j<=23; j++){
-                        freq[i][j] = 0;
-                    }
-                }
-                return freq;
-            },
-            "startstamp": function(){
-                return Date.now();
-            },
-            "last": function(){
-                return Date.now();
-            }
-        };
-
-        var userStats = dbot.db.userStats;
-        for(var curr_server in userStats){
-            if(!userStats.hasOwnProperty(curr_server)) continue;
-            for(var curr_user in userStats[curr_server]){
-                if(!userStats[curr_server].hasOwnProperty(curr_user)) continue;
-                for(var curr_chan in userStats[curr_server][curr_user]){
-                    if(!userStats[curr_server][curr_user].hasOwnProperty(curr_chan)) continue;
-                    for(var field in user_structure){
-                        if(!user_structure.hasOwnProperty(field)) continue;
-                        if(!userStats[curr_server][curr_user][curr_chan].hasOwnProperty(field)){
-                            if(typeof(user_structure[field]) == "function"){
-                                userStats[curr_server][curr_user][curr_chan][field] = user_structure[field].apply();
-                            }
-                            else{
-                                userStats[curr_server][curr_user][curr_chan][field] = user_structure[field];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        var chanStats = dbot.db.chanStats;
-        for(var curr_server in chanStats){
-            if(!chanStats.hasOwnProperty(curr_server)) continue;
-            for(var curr_chan in chanStats[curr_server]){
-                if(!chanStats[curr_server].hasOwnProperty(curr_chan)) continue;
-                for(var field in chan_structure){
-                    if(!chan_structure.hasOwnProperty(field)) continue;
-                    if(!chanStats[curr_server][curr_chan].hasOwnProperty(field)){
-                        if(typeof(chan_structure[field]) == "function"){
-                            chanStats[curr_server][curr_chan][field] = chan_structure[field].apply();
-                        }
-                        else{
-                            chanStats[curr_server][curr_chan][field] = chan_structure[field];
-                        }
-                    }
-                }
-            }
-        }
+        _.each(chanStats, function(server, serverName){
+            _.each(chanStats[serverName], function(chan, chanName){
+                _.defaults(chanStats[serverName][chanName], fieldFactoryChanProduct);
+            });
+        });
         dbot.save();
     };
 
@@ -635,7 +741,8 @@ var stats = function(dbot){
                 userStats[event.server][user] = {}
             }
             if(!userStats[event.server][user].hasOwnProperty(event.channel)){
-                //TODO(samstudio8): populateUser function
+//                _.defaults(userStats[event.server][user][event.channel], fieldFactoryUserProduct);
+
                 userStats[event.server][user][event.channel] = {
                     "total_lines": 0,
                     "total_words": 0,
@@ -661,7 +768,8 @@ var stats = function(dbot){
             
             // Channel-centric Stats
             if(!chanStats[event.server].hasOwnProperty(event.channel)){
-                //TODO(samstudio8): populateChannel function
+//                _.defaults(userStats[serverName][chanName], fieldFactoryChanProduct);
+
                 chanStats[event.server][event.channel] = {
                     "total_lines": 0,
                     "total_words": 0,
