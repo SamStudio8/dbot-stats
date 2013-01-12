@@ -41,7 +41,7 @@ var stats = function(dbot){
     //I am not proud of this!
     //Create an internal API to perform calculations such as wpl/lincent
     //that can be used by the commands as well as the API
-    var validAPIFields = {
+    var internalAPI = {
         //Note that the existence of relevant stats dbKeys will have 
         //already been determined outside of the call to a validField
         //function and there is no need to check their existence here
@@ -129,7 +129,7 @@ var stats = function(dbot){
 
         //TODO(samstudio8)
         //The input for this function should be an object, this will also make
-        //handling calls to any required validAPIField functions below tidier
+        //handling calls to any required internalAPI functions below tidier
         'getUserStats': function(server, nick, channel, fields){
             var primary = dbot.api.users.resolveUser(server, nick, true);
             var user = {
@@ -143,20 +143,20 @@ var stats = function(dbot){
 
             if(!fields){
                 //Use all available fields if a specific list was not defined
-                var fields = Object.keys(validAPIFields);
+                var fields = Object.keys(internalAPI);
             }
             if(!userStats[server].hasOwnProperty(primary)
                     || !userStats[server][primary].hasOwnProperty(channel)
                     || !chanStats[server].hasOwnProperty(channel)) return user;
             for(var i=0; i<fields.length; i++){
                 var curr_field = fields[i].toLowerCase();
-                if(validAPIFields.hasOwnProperty(curr_field)){
-                    if(typeof(validAPIFields[curr_field]) == "function"){
+                if(internalAPI.hasOwnProperty(curr_field)){
+                    if(typeof(internalAPI[curr_field]) == "function"){
                         var request = {
                             "server": server,
                             "primary": primary,
                             "channel": channel};
-                        user[curr_field] = validAPIFields[curr_field](request);
+                        user[curr_field] = internalAPI[curr_field](request);
                     }
                     else{
                         user[curr_field] = userStats[server][primary][channel][curr_field];
