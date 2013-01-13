@@ -60,7 +60,9 @@ var stats = function(dbot){
         },
         "in_mentions": {},
         "out_mentions": {
-            "def": {},
+            "def": function(){
+                return {};   
+            },
             "add": function(addreq){
                 if(!_.has(addreq, "mentioned") || !_.has(addreq, "inc")) return;
                 if(!_.has(this.data, addreq.mentioned)){
@@ -345,9 +347,6 @@ var stats = function(dbot){
               var users = {};
               _.each(userStats[server], function(user, userName){
                   if(_.has(userStats[server][userName], channel)){
-                      console.log(userName);
-                      console.log(Object.keys(userStats[server][userName][channel]));
-                      console.log(Object.keys(userStats[server][userName][channel]["out_mentions"].data));
                       users[userName] = userStats[server][userName][channel];
                   }
               });
