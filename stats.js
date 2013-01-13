@@ -5,20 +5,35 @@ var stats = function(dbot){
     var _ = require('underscore')._
 
     var user_structure = {
-        "lines": {
-            "name": "lines",
+        "lines": {},
+        "words": {},
+        "lincent": {
             "format": function(data){
-                return data.numberFormat(0);
-            }
+                return data.numberFormat(2)+"%";
+            },
+            "get": function(getreq){
+                if(!getreq) return;
+                if(!getreq.server || !getreq.user || !getreq.channel) return -1;
+                var user_lines = api.getUserStat(getreq.server, getreq.user, getreq.channel, ["lines"]);
+                var chan_lines = api.getChanStat(getreq.server, getreq.channel, ["lines"]);
+                if(!user_lines || !chan_lines) return -1;
+                return this.format((user_lines.raw / chan_lines.raw)*100);
+            },
         },
-        "words": {
-            "name": "words",
+        "wpl": {
             "format": function(data){
-                return data.numberFormat(0);
-            }
+                return data.numberFormat(2)+" wpl";
+            },
+            "get": function(getreq){
+                if(!getreq) return;
+                if(!getreq.server || !getreq.user || !getreq.channel) return -1;
+                var user_words = api.getUserStat(getreq.server, getreq.user, getreq.channel, ["words"]);
+                var user_lines = api.getUserStat(getreq.server, getreq.user, getreq.channel, ["lines"]);
+                if(!user_words || !user_lines) return -1;
+                return this.format(user_words.raw / user_lines.raw);
+            },
         },
         "freq": {
-            "name": "freq",
             "def": function(){ 
                 var freq = {};
                 for(var i=0; i<=6; i++){
@@ -29,6 +44,7 @@ var stats = function(dbot){
                 }
                 return freq;
             },
+            //TODO Get field passes to format
             "format": function(data, day, hour){
                 if(!day || !hour) return -1;
                 if(day >= 0 && day <= 6 && hour >= 0 && hour <= 23){
@@ -37,24 +53,32 @@ var stats = function(dbot){
                 else{
                     return -1;
                 }
-            }
+            },
+            "add": function(addreq){
+                if(!addreq.day || !addreq.hour || !addreq.inc) return;
+                if(addreq.day < 0 && addreq.day > 6 && addreq.hour < 0 && addreq.hour > 23) return;
+                this.data[addreq.day][addreq.hour] += addreq.inc;
+            },
         },
-        "in_mentions": {
-            "name": "in_mentions",
+        "in_mentions": {},
+        "out_mentions": {
+            "def": {},
             "format": function(data){
                 return data.numberFormat(0);
-            }
-        },
-        "out_mentions": {
-            "name": "out_mentions",
-            "def": {},
-            "format": function(data, user){
-                if(!user || !_has(data, user)) return -1;
-                return data[user].numberFormat(0);
-            }
+            },
+            "add": function(addreq){
+                if(!addreq.mentioned || !addreq.inc) return;
+                if(!_.has(this.data, addreq.mentioned)){
+                    this.data[addreq.mentioned] = 0;
+                }
+                this.data[addreq.mentioned] += addreq.inc;
+            },
+            "get": function(getreq){
+                if(!getreq.mentioned || !_.has(this.data, getreq.mentioned)) return;
+                return this.format(this.data[getreq.mentioned]);
+            },
         },
         "init": {
-            "name": "init",
             "def": function(){
                 return Date.now();
             },
@@ -65,20 +89,9 @@ var stats = function(dbot){
     };
 
     var chan_structure = {
-        "lines": {
-            "name": "lines",
-            "format": function(data){
-                return data.numberFormat(0);
-            }
-        },
-        "words": {
-            "name": "words",
-            "format": function(data){
-                return data.numberFormat(0);
-            }
-        },
+        "lines": {},
+        "words": {},
         "freq": {
-            "name": "freq",
             "def": function(){ 
                 var freq = {};
                 for(var i=0; i<=6; i++){
@@ -97,10 +110,14 @@ var stats = function(dbot){
                 else{
                     return -1;
                 }
-            }
+            },
+            "add": function(addreq){
+                if(!addreq.day || !addreq.hour || !addreq.inc) return;
+                if(addreq.day < 0 && addreq.day > 6 && addreq.hour < 0 && addreq.hour > 23) return;
+                this.data[addreq.day][addreq.hour] += addreq.inc;
+            },
         },
         "init": {
-            "name": "init",
             "def": function(){
                 return Date.now();
             },
@@ -124,6 +141,40 @@ var stats = function(dbot){
             }
         }
 
+        // If a field does not define a format method, the data is to be
+        // returned as a number with thousands seperators
+        var format;
+        if(!toField.format){
+            format = function(data){
+                return data.numberFormat(0);
+            };
+        }
+        else{
+            format = toField.format;
+        }
+
+        // If a field defines an add method, this will override the default
+        var __add;
+        if(!toField.add){
+            __add = function(inc){
+                this.data += inc;
+            };
+        }
+        else{
+            __add = toField.add;
+        }
+
+        // If a field defines a get method, this will override the default
+        var get;
+        if(!toField.get){
+            get = function(getreq){
+                return this.data;
+            };
+        }
+        else{
+            get = toField.get;
+        }
+
         // If a field was manufactured before arriving at the factory, complete 
         // its data value and output it in the state in which it arrived.
         if(_.contains(prefabFields, key)){
@@ -132,20 +183,17 @@ var stats = function(dbot){
         }
 
         return {
-            "name": toField.name,
+            "name": key,
             "data": def,
-            "format": toField.format,
+            "format": format,
             "toString": function(){
                 return this.format(this.data);
             },
-            "inc": function(){
-                // Increment the data field if it is a number
-                if(!isNaN(parseFloat(this.data)) && isFinite(this.data)){
-                    this.data += 1;
-                }
-                else{
-                    console.log("[STAT][WARN] Attempt to increment a non-numeric field: "+this.name);
-                }
+            "get": get,
+            "__add": __add,
+            "add": function(input){
+                this.__add(input);
+                this.time.last.stamp = Date.now();
             },
             "time": {
                 "init": {
@@ -294,6 +342,61 @@ var stats = function(dbot){
             // Request was missing a component or dbKey does not exist
             return false;
         },
+        
+        'getChanStat': function(server, channel, field){
+            if(!_.has(userStats, server) || !_.has(chanStats, server)) return null;
+            if(!_.has(chanStats[server], channel) || !_.has(chanStats[server][channel], field)) return null;
+
+            field = field.toLowerCase();
+            var reply = {
+                "field": field,
+                "data": dbot.db.chanStats[server][channel][field], 
+                "raw": dbot.db.chanStats[server][channel][field].data, 
+                "init": dbot.db.chanStats[server][channel][field].time.init, 
+                "last": dbot.db.chanStats[server][channel][field].time.last,
+            };
+            return reply;
+        },
+
+        'getUserStat': function(server, nick, channel, fields){
+            if(!server || !nick || !channel || !fields) return null;
+            if(!_.has(userStats, server) || !_.has(chanStats, server)) return null;
+
+            var primary = dbot.api.users.resolveUser(server, nick, true);
+            var reqobj = {"server": server, "user": primary, "channel": channel};
+
+            if(!_.has(userStats[server], primary)
+                    || !_.has(userStats[server][primary], channel)
+                    || !_.has(chanStats[server], channel)) return null;
+
+            var display = primary;
+            if(primary != nick.toLowerCase()){
+                display = nick.toLowerCase()+" ("+primary+")";
+            }
+
+            var fieldResults = {};
+            _.each(fields, function(field){
+                field = field.toLowerCase();
+                fieldResults[field] = {};
+                if(_.has(userStats[server][primary][channel], field)){
+                    fieldResults[field]["name"] = field;
+                    fieldResults[field]["data"] = dbot.db.userStats[server][primary][channel][field].get(reqobj);
+                    fieldResults[field]["raw"] = dbot.db.userStats[server][primary][channel][field].data;
+                    fieldResults[field]["init"] = dbot.db.userStats[server][primary][channel][field].time.init;
+                    fieldResults[field]["last"] =  dbot.db.userStats[server][primary][channel][field].time.last;
+                }
+                else{
+                    fieldResults[field]["code"] = -1;
+                }
+            });
+
+            var reply = {
+                "display": display,
+                "primary": primary,
+                "fields": fieldResults,
+            };
+            return reply;
+        },
 
         //TODO(samstudio8)
         //The input for this function should be an object, this will also make
@@ -336,95 +439,83 @@ var stats = function(dbot){
     };
 
     var commands = {
-        '~test': function(event){
-
-            event.reply(dbot.t("user_lines", {
-                "user": "test",
-                "chan": event.channel,
-                "lines": user_test.lines, //Use API!
-                "start": user_test.lines.time.init}
-            ));
-        },
-
         '~lines': function(event){
-            if(!userStats.hasOwnProperty(event.server)) return;
             if(event.params[1]){
-                var input = dbot.api.users.resolveUser(event.server, event.params[1], true);
-                if(userStats[event.server].hasOwnProperty(input) && userStats[event.server][input].hasOwnProperty(event.channel)){
+                var result = api.getUserStat(event.server, event.params[1], event.channel, ["lines"]);
+                if(result){
                     event.reply(dbot.t("user_lines", {
-                        "user": input,
+                        "user": result.primary,
                         "chan": event.channel,
-                        "lines": userStats[event.server][input][event.channel]["total_lines"].numberFormat(0),
-                        "start": formatDate(userStats[event.server][input][event.channel]["startstamp"])}
-                    ));
+                        "lines": result.fields.lines.data,
+                        "start": result.fields.lines.init
+                    }));
                 }
                 else{
                     event.reply(dbot.t("no_data", {
-                        "user": input}
-                    ));
+                        "user": event.params[1].toLowerCase()
+                    }));
                 }
             }
             else{
-                if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
-                event.reply(dbot.t("chan_lines", {
-                    "chan": event.channel,
-                    "lines": chanStats[event.server][event.channel]["total_lines"].numberFormat(0),
-                    "start": formatDate(chanStats[event.server][event.channel]["startstamp"])}
-                ));
+                //TODO(samstudio8) Update chanStats
+                var result = api.getChanStat(event.server, event.channel, "lines");
+                if(result){
+                    event.reply(dbot.t("chan_lines", {
+                        "chan": event.channel,
+                        "lines": result.data,
+                        "start": result.init
+                    }));
+                }
             }
         },
 
         '~words': function(event){
-            if(!userStats.hasOwnProperty(event.server)) return;
             if(event.params[1]){
-                var input = dbot.api.users.resolveUser(event.server, event.params[1], true);
-                if(userStats[event.server].hasOwnProperty(input) && userStats[event.server][input].hasOwnProperty(event.channel)){
+                var result = api.getUserStat(event.server, event.params[1], event.channel, ["words", "wpl"]);
+                if(result){
                     event.reply(dbot.t("user_words", {
-                        "user": input,
+                        "user": result.primary,
                         "chan": event.channel,
-                        "words": userStats[event.server][input][event.channel]["total_words"].numberFormat(0),
-                        "avg": (userStats[event.server][input][event.channel]["total_words"] 
-                            / userStats[event.server][input][event.channel]["total_lines"]).numberFormat(2),
-                        "start": formatDate(userStats[event.server][input][event.channel]["startstamp"])}
-                    ));
+                        "words": result.fields.words.data,
+                        "avg": result.fields.wpl.data,
+                        "start": result.init
+                    }));
                 }
                 else{
                     event.reply(dbot.t("no_data", {
-                        "user": input}
-                    ));
+                        "user": event.params[1].toLowerCase()
+                    }));
                 }
             }
             else{
-                if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
-                event.reply(dbot.t("chan_words", {
-                    "chan": event.channel,
-                    "words": chanStats[event.server][event.channel]["total_words"].numberFormat(0),
-                    "avg": (chanStats[event.server][event.channel]["total_words"] 
-                        / chanStats[event.server][event.channel]["total_lines"]).numberFormat(2),
-                    "start": formatDate(chanStats[event.server][event.channel]["startstamp"])}
-                ));
+                var result = api.getChanStat(event.server, event.channel, "words");
+                if(result){
+                    event.reply(dbot.t("chan_words", {
+                        "chan": event.channel,
+                        "words": result.data,
+                        "avg": (result.raw / chanStats[event.server][event.channel]["lines"].data).numberFormat(2),
+                        "start": result.init
+                    }));
+                }
             }
         },
 
         '~lincent': function(event){
-            if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
             if(event.params[1]){
-                var input = dbot.api.users.resolveUser(event.server, event.params[1], true);
-                if(userStats[event.server].hasOwnProperty(input) && userStats[event.server][input].hasOwnProperty(event.channel)){
-                    var percent = ((userStats[event.server][input][event.channel]["total_lines"]
-                        / chanStats[event.server][event.channel]["total_lines"])*100);
+                var result = api.getUserStat(event.server, event.params[1], event.channel, ["lincent", "lines"]);
+                if(result){
                     event.reply(dbot.t("lines_percent", {
-                        "user": input,
+                        "user": result.primary,
                         "chan": event.channel,
-                        "percent": percent.numberFormat(2),
-                        "lines": userStats[event.server][input][event.channel]["total_lines"].numberFormat(0),
-                        "start": formatDate(userStats[event.server][input][event.channel]["startstamp"])}
-                    ));
+                        "percent": results.fields.lincent.data,
+                        "lines": results.fields.lines.data,
+                        "start": result.init
+                    }));
                 }
                 else{
                     event.reply(dbot.t("no_data", {
-                        "user": input}
-                    ));
+                        "user": event.params[1].toLowerCase()
+                    }));
                 }
             }
             else{
@@ -702,6 +793,15 @@ var stats = function(dbot){
             _.each(userStats[serverName], function(user, userName){
                 _.each(userStats[serverName][userName], function(chan, chanName){
                     _.defaults(userStats[serverName][userName][chanName], fieldFactoryUserProduct);
+                    //TODO(samstudio8) Doom, it was going so well.
+                    _.each(userStats[serverName][userName][chanName], function(field, fieldName){
+                        _.defaults(userStats[serverName][userName][chanName][fieldName], fieldFactoryUserProduct[fieldName]);
+                        userStats[serverName][userName][chanName][fieldName].toString = fieldFactoryUserProduct[fieldName].toString;
+                        if(_.has(fieldFactoryUserProduct[fieldName], "time")){
+                            userStats[serverName][userName][chanName][fieldName].time.init.toString = fieldFactoryUserProduct[fieldName].time.init.toString;
+                            userStats[serverName][userName][chanName][fieldName].time.last.toString = fieldFactoryUserProduct[fieldName].time.last.toString;
+                        }
+                    });
                 });
             });
         });
@@ -709,6 +809,15 @@ var stats = function(dbot){
         _.each(chanStats, function(server, serverName){
             _.each(chanStats[serverName], function(chan, chanName){
                 _.defaults(chanStats[serverName][chanName], fieldFactoryChanProduct);
+                //TODO(samstudio8) Doom, not chan stats too!
+                _.each(chanStats[serverName][chanName], function(field, fieldName){
+                    _.defaults(chanStats[serverName][chanName][fieldName], fieldFactoryChanProduct[fieldName]);
+                    chanStats[serverName][chanName][fieldName].toString = fieldFactoryChanProduct[fieldName].toString;
+                    if(_.has(fieldFactoryChanProduct[fieldName], "time")){
+                        chanStats[serverName][chanName][fieldName].time.init.toString = fieldFactoryChanProduct[fieldName].time.init.toString;
+                        chanStats[serverName][chanName][fieldName].time.last.toString = fieldFactoryChanProduct[fieldName].time.last.toString;
+                    }
+                });
             });
         });
         dbot.save();
@@ -733,63 +842,29 @@ var stats = function(dbot){
                 chanStats[event.server] = {}
             }
 
-            //var user = event.user.trim().toLowerCase();
             var user = dbot.api.users.resolveUser(event.server, event.user, true);
+            var num_words = event.message.split(" ").filter(function(w, i, array) { return w.length > 0; }).length
 
             // User-centric Stats
             if(!userStats[event.server].hasOwnProperty(user)){
                 userStats[event.server][user] = {}
             }
             if(!userStats[event.server][user].hasOwnProperty(event.channel)){
-//                _.defaults(userStats[event.server][user][event.channel], fieldFactoryUserProduct);
-
-                userStats[event.server][user][event.channel] = {
-                    "total_lines": 0,
-                    "total_words": 0,
-                    "freq": {},
-                    "in_mentions": 0,
-                    "out_mentions": {},
-                    "startstamp": Date.now(),
-                    "last": Date.now()
-                };
-                
-                // Initialize frequency counters
-                for(var i=0; i<=6; i++){
-                    userStats[event.server][user][event.channel]["freq"][i] = {};
-                    for(var j=0; j<=23; j++){
-                        userStats[event.server][user][event.channel]["freq"][i][j] = 0;
-                    }
-                }
+                userStats[event.server][user][event.channel] = {}
+                _.defaults(userStats[event.server][user][event.channel], fieldFactoryUserProduct);
             }
-            userStats[event.server][user][event.channel]["freq"][event.time.getDay()][event.time.getHours()] += 1;
-            userStats[event.server][user][event.channel]["total_lines"] += 1;
-            userStats[event.server][user][event.channel]["total_words"] += event.message.split(" ").filter(function(w, i, array) { return w.length > 0; }).length;
-            userStats[event.server][user][event.channel]["last"] = event.time.getTime();
+            userStats[event.server][user][event.channel]["freq"].add({"day": event.time.getDay(), "hour": event.time.getHours(), "inc": 1});
+            userStats[event.server][user][event.channel]["lines"].add(1);
+            userStats[event.server][user][event.channel]["words"].add(num_words);
             
             // Channel-centric Stats
             if(!chanStats[event.server].hasOwnProperty(event.channel)){
-//                _.defaults(userStats[serverName][chanName], fieldFactoryChanProduct);
-
-                chanStats[event.server][event.channel] = {
-                    "total_lines": 0,
-                    "total_words": 0,
-                    "freq": {},
-                    "startstamp": Date.now(),
-                    "last": Date.now()
-                };
-                
-                // Initialize frequency counters
-                for(var i=0; i<=6; i++){
-                    chanStats[event.server][event.channel]["freq"][i] = {};
-                    for(var j=0; j<=23; j++){
-                        chanStats[event.server][event.channel]["freq"][i][j] = 0;
-                    }
-                }
+                chanStats[event.server][event.channel] = {}
+                _.defaults(chanStats[event.server][event.channel], fieldFactoryChanProduct);
             }
-            chanStats[event.server][event.channel]["freq"][event.time.getDay()][event.time.getHours()] += 1;
-            chanStats[event.server][event.channel]["total_lines"] += 1;
-            chanStats[event.server][event.channel]["total_words"] += event.message.split(" ").length;
-            chanStats[event.server][event.channel]["last"] = event.time.getTime();
+            chanStats[event.server][event.channel]["freq"].add({"day": event.time.getDay(), "hour": event.time.getHours(), "inc": 1});
+            chanStats[event.server][event.channel]["lines"].add(1);
+            chanStats[event.server][event.channel]["words"].add(num_words);
 
             // Check whether the line includes any mentions
             if(dbot.db.hasOwnProperty("knownUsers")){
@@ -801,11 +876,8 @@ var stats = function(dbot){
                     if(userStats[event.server].hasOwnProperty(mentioned) && userStats[event.server][mentioned][event.channel]){
                         var toMatch = "( |^)"+name.escape().toLowerCase()+":?(?=\\s|$)";
                         if(event.message.toLowerCase().search(toMatch) > -1){
-                            if(!userStats[event.server][user][event.channel]["out_mentions"].hasOwnProperty(mentioned)){
-                                userStats[event.server][user][event.channel]["out_mentions"][mentioned] = 0;
-                            }
-                            userStats[event.server][user][event.channel]["out_mentions"][mentioned] += 1;
-                            userStats[event.server][mentioned][event.channel]["in_mentions"] += 1;
+                            userStats[event.server][user][event.channel]["out_mentions"].add({"mentioned": mentioned, "inc": 1});
+                            userStats[event.server][mentioned][event.channel]["in_mentions"].add(1);
                         }
                     }
                 }
