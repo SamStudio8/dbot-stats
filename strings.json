@@ -40,5 +40,8 @@
     },
     "verbose": {
       "english": "Most verbose users in {chan} since {start}: {list}"
+    },
+    "user_last": {
+      "english": "{user} last seen in {chan} on {last}"
     }
 }

@@ -2,6 +2,8 @@ var stats = function(dbot){
     var userStats = dbot.db.userStats;
     var chanStats = dbot.db.chanStats;
 
+    //TODO(samstudio8) @reality is officially deprecating snippets.js,
+    //cannot rely on filter or numberFormat
     var _ = require('underscore')._
 
     // Detail the structure of userStats.server.user.channel dbKeys
@@ -16,9 +18,9 @@ var stats = function(dbot){
                 if(!getreq) return;
                 if(!getreq.server || !getreq.user || !getreq.channel) return -1;
                 var user_lines = api.getUserStat(getreq.server, getreq.user, getreq.channel, ["lines"]);
-                var chan_lines = api.getChanStat(getreq.server, getreq.channel, ["lines"]);
+                var chan_lines = api.getChanStat(getreq.server, getreq.channel, "lines");
                 if(!user_lines || !chan_lines) return -1;
-                return this.format((user_lines.raw / chan_lines.raw)*100);
+                return this.format((user_lines.fields.lines.raw / chan_lines.raw)*100);
             },
         },
         "wpl": {
@@ -31,7 +33,7 @@ var stats = function(dbot){
                 var user_words = api.getUserStat(getreq.server, getreq.user, getreq.channel, ["words"]);
                 var user_lines = api.getUserStat(getreq.server, getreq.user, getreq.channel, ["lines"]);
                 if(!user_words || !user_lines) return -1;
-                return this.format(user_words.raw / user_lines.raw);
+                return this.format(user_words.fields.words.raw / user_lines.fields.lines.raw);
             },
         },
         "freq": {
@@ -46,13 +48,13 @@ var stats = function(dbot){
                 return freq;
             },
             "get": function(getreq){
-                if(!getreq.day || !getreq.hour) return;
-                if(getreq.day < 0 && getreq.day > 6 && getreq.hour < 0 && getreq.hour > 23) return;
+                if(!_.has(addreq, "day") || !_.has(addreq, "hour")) return;
+                if(addreq.day < 0 || addreq.day > 6 || addreq.hour < 0 || addreq.hour > 23) return;
                 return this.format(this.data[getreq.day][getreq.hour]);
             },
             "add": function(addreq){
-                if(!addreq.day || !addreq.hour || !addreq.inc) return;
-                if(addreq.day < 0 && addreq.day > 6 && addreq.hour < 0 && addreq.hour > 23) return;
+                if(!_.has(addreq, "day") || !_.has(addreq, "hour") || !_.has(addreq, "inc")) return;
+                if(addreq.day < 0 || addreq.day > 6 || addreq.hour < 0 || addreq.hour > 23) return;
                 this.data[addreq.day][addreq.hour] += addreq.inc;
             },
         },
@@ -60,23 +62,24 @@ var stats = function(dbot){
         "out_mentions": {
             "def": {},
             "add": function(addreq){
-                if(!addreq.mentioned || !addreq.inc) return;
+                if(!_.has(addreq, "mentioned") || !_.has(addreq, "inc")) return;
                 if(!_.has(this.data, addreq.mentioned)){
                     this.data[addreq.mentioned] = 0;
                 }
                 this.data[addreq.mentioned] += addreq.inc;
             },
             "get": function(getreq){
-                if(!getreq.mentioned || !_.has(this.data, getreq.mentioned)) return;
+                if(!_.has(getreq, "mentioned") || !_.has(this.data, getreq.mentioned)) return -1;
                 return this.format(this.data[getreq.mentioned]);
             },
         },
         "init": {
+            "prefab": true,
             "def": function(){
                 return Date.now();
             },
             "toString": function(){ 
-                return formatDate(this.stamp);
+                return formatDate(this.data);
             }
         }
     };
@@ -97,31 +100,31 @@ var stats = function(dbot){
                 return freq;
             },
             "get": function(getreq){
-                if(!getreq.day || !getreq.hour) return;
-                if(getreq.day < 0 && getreq.day > 6 && getreq.hour < 0 && getreq.hour > 23) return;
+                if(!_.has(addreq, "day") || !_.has(addreq, "hour")) return;
+                if(addreq.day < 0 || addreq.day > 6 || addreq.hour < 0 || addreq.hour > 23) return;
                 return this.format(this.data[getreq.day][getreq.hour]);
             },
             "add": function(addreq){
-                if(!addreq.day || !addreq.hour || !addreq.inc) return;
-                if(addreq.day < 0 && addreq.day > 6 && addreq.hour < 0 && addreq.hour > 23) return;
+                if(!_.has(addreq, "day") || !_.has(addreq, "hour") || !_.has(addreq, "inc")) return;
+                if(addreq.day < 0 || addreq.day > 6 || addreq.hour < 0 || addreq.hour > 23) return;
                 this.data[addreq.day][addreq.hour] += addreq.inc;
             },
         },
         "init": {
+            "prefab": true,
             "def": function(){
                 return Date.now();
             },
             "toString": function(){ 
-                return formatDate(this.stamp);
+                return formatDate(this.data);
             }
         }
     };
 
-    var prefabFields = ["init"];
     var fieldFactory = function(key, toField){
 
         // Handle the default value for the field
-        var def;
+        var def = 0;
         if(toField.def){
             if(_.isFunction(toField.def)){
                 def = toField.def.apply();
@@ -171,7 +174,7 @@ var stats = function(dbot){
 
         // If a field was manufactured before arriving at the factory, complete 
         // its data value and output it in the state in which it arrived.
-        if(_.contains(prefabFields, key)){
+        if(toField.prefab){
             toField["data"] = def;
             return toField;
         }
@@ -192,25 +195,34 @@ var stats = function(dbot){
             "time": {
                 "init": {
                     "stamp": Date.now(),
-                    "toString": function(){ return formatDate(this.stamp); }
+                    "toString": function(){ return formatDate(this.stamp); },
+                    "full": function(){ return formatDate(this.stamp, 1); }
                 },
                 "last": {
                     "stamp": Date.now(),
-                    "toString": function(){ return formatDate(this.stamp); }
+                    "toString": function(){ return formatDate(this.stamp); },
+                    "full": function(){ return formatDate(this.stamp, 1); }
                 }
             }
         }
     };
 
-    var fieldFactoryUserProduct = {};
-    _.each(user_structure, function(value, key, obj){
-        return fieldFactoryUserProduct[key] = fieldFactory(key, value);
-    });
+    var fieldFactoryOutlet = function(request){
+        var fieldFactoryProduct = {};
+        if(request == "user"){
+            _.each(user_structure, function(value, key, obj){
+                fieldFactoryProduct[key] = fieldFactory(key, value);
+            });
+        }
+        else if(request == "chan"){
+            _.each(chan_structure, function(value, key, obj){
+                fieldFactoryProduct[key] = fieldFactory(key, value);
+            });
 
-    var fieldFactoryChanProduct = {};
-    _.each(chan_structure, function(value, key, obj){
-        return fieldFactoryChanProduct[key] = fieldFactory(key, value);
-    });
+        }
+        else{ return null; }
+        return fieldFactoryProduct;
+    };
 
     var formatDate = function(d, fullForm){
         if(!fullForm){
@@ -231,24 +243,11 @@ var stats = function(dbot){
         return d[4];
     };
 
-    var leaderboarder = function(sorted, num_results, val_suffix){
-        num_results = typeof num_results !== "undefined" ? num_results : 5;
-        val_suffix = typeof val_suffix !== "undefined" ? val_suffix : "";
-
-        sorted = sorted.filter(function(w, i, array) { return w[1] > 0; }).reverse().slice(0, num_results);
-
-        var leaderboard = "";
-        for(var i=0; i < sorted.length; i++) {
-            leaderboard += sorted[i][0] + " (" + sorted[i][1] + val_suffix + "), ";
-        }
-        return leaderboard.slice(0, -2);
-    };
-
     //TODO(samstudio8): There must be a less terrible way to resolve the weekday
     var days = {'1':"Monday", '2':"Tueday", '3':"Wednesday", '4':"Thursday", '5':"Friday", '6':"Saturday", '0':"Sunday"};
 
     //TODO(samstudio8):
-    //I am not proud of this!
+    // To be deprecated
     //Create an internal API to perform calculations such as wpl/lincent
     //that can be used by the commands as well as the API
     var internalAPI = {
@@ -336,7 +335,161 @@ var stats = function(dbot){
             // Request was missing a component or dbKey does not exist
             return false;
         },
+
+        'getChannelUserStats': function(server, channel){
+            if(!server || !channel) return [];
+            if(!_.has(userStats, server) 
+                    || !_.has(chanStats, server)
+                    || !_.has(chanStats[server], channel)) return [];
+
+              var users = {};
+              _.each(userStats[server], function(user, userName){
+                  if(_.has(userStats[server][userName], channel)){
+                      console.log(userName);
+                      console.log(Object.keys(userStats[server][userName][channel]));
+                      console.log(Object.keys(userStats[server][userName][channel]["out_mentions"].data));
+                      users[userName] = userStats[server][userName][channel];
+                  }
+              });
+              return users;
+        },
         
+        //TODO(samstudio8) Implement reverse parameter
+        'leaderboarder': function(server, user, channel, field, places, reverse){
+            if(!server || !field) return null;
+            if(!_.has(userStats, server) || !_.has(chanStats, server)) return null;
+
+            // Resolve leaderboading methods to the user field that should be 
+            // first be sorted to construct a leaderboard.
+            var user_leaderboards = {
+                "loudest": "lincent",
+                "verbose": "wpl",
+                "popular": "in_mentions",
+            };
+
+            //TODO(samstudio8)
+            // There should be a nicer way to do this, I'm just too tired to
+            // think of it right now...
+            //
+            // Each API method that uses both a user and channel parameter
+            // is attached to an object that will define how the data that is 
+            // to be sorted should be discovered and collected;
+            //
+            //    Search
+            //      Dictate whether to iterate over users in the channel
+            //
+            //        true  -   Iterate over all users with activity in the 
+            //                  given channel and collect the required field
+            //        false -   The field to be sorted belongs to the user
+            //                  object itself
+            //
+            //    Match 
+            //      Only required if Search is true
+            //      Defines whether the data collected by search must be matched
+            //      for a particular key before data can be collected
+            //
+            //        true  -   The data found by the initial search is an 
+            //                  object which must be checked for the appropriate 
+            //                  key (which may or may not exist) such as a 
+            //                  particular user
+            //        false -   The data found by the initial search is a simple
+            //                  counter or other such field that does not
+            //                  need to be checked for a certain key
+            //                  
+            var user_chan_boards = {
+                "out_mentions": {
+                    "field": "out_mentions",
+                    "search": false,
+                },
+                "in_mentions": {
+                    "field": "out_mentions",
+                    "search": true,
+                    "match": true
+                }
+            };
+            
+            if(user && channel){
+                var primary = dbot.api.users.resolveUser(server, user, true);
+                if(!_.has(chanStats[server], channel)
+                        || !_.has(userStats[server], primary)
+                        || !_.has(userStats[server][primary], channel)) return null;
+                
+                var reqobj = {"server": server, "user": primary, "channel": channel};
+
+                var sorted;
+                if(user_chan_boards[field].search == true){
+                    if(user_chan_boards[field].match == true){
+                        //TODO(samstudio8) Update to underscore.js when you are
+                        //less angry at it...
+                        sorted = Object.prototype.sort(api.getChannelUserStats(server, channel), function(key, obj) {
+                                //return obj[key][user_chan_boards[field].field].get({"mentioned": primary});
+                                return obj[key][user_chan_boards[field].field].data[primary];
+                            }
+                        );
+                    }
+                    else{
+                        // Currently no commands require this functionality
+                        return null;
+                    }
+                }
+                else{
+                    // Sort a particular users data
+                    sorted = Object.prototype.sort(
+                        userStats[server][primary][channel][user_chan_boards[field].field].data, 
+                        function(key, obj) {
+                            return obj[key];
+                        }
+                    );
+                }
+                
+                // Build the leaderboard string
+                var leaderboard_str = "";
+                sorted = sorted.filter(function(w, i, array) { return w[1] > 0; }).reverse().slice(0, places);
+                for(var i=0; i < sorted.length; i++) {
+                    leaderboard_str += sorted[i][0] + " (" + sorted[i][1] + "), ";
+                }
+                leaderboard_str = leaderboard_str.slice(0, -2);
+
+                //Euch
+                var init = dbot.db.userStats[server][primary][channel].init;
+            }
+            else if(user){
+                //TODO(samstudio8)[FUTURE] Summary server stats across all channels?
+                return null;
+            }
+            else if(channel){
+                if(!_.has(chanStats[server], channel)) return null;
+                var users = api.getChannelUserStats(server, channel);
+                var sorted = _.chain(users)
+                    .pairs()
+                    .sortBy(function(item) { 
+                        var reqobj = {"server": server, "user": item[0], "channel": channel};
+                        return item[1][user_leaderboards[field]].get(reqobj);
+                    })
+                    .reverse()
+                    .first(places)
+                    .value();
+
+                var leaderboard_str = "";
+                _.each(sorted, function(item){
+                    var reqobj = {"server": server, "user": item[0], "channel": channel};
+                    leaderboard_str += item[0] + " (" + item[1][user_leaderboards[field]].get(reqobj) + "), ";
+                });
+                leaderboard_str = leaderboard_str.slice(0, -2);
+
+                //Euch
+                var init = dbot.db.chanStats[server][channel].init;
+
+            }
+            else{ return null; }
+
+            return {
+                "leaderboard": leaderboard_str,
+                "places": sorted.length,
+                "init": init,
+            };
+        },
+
         'getChanStat': function(server, channel, field){
             if(!_.has(userStats, server) || !_.has(chanStats, server)) return null;
             if(!_.has(chanStats[server], channel) || !_.has(chanStats[server][channel], field)) return null;
@@ -472,7 +625,7 @@ var stats = function(dbot){
                         "chan": event.channel,
                         "words": result.fields.words.data,
                         "avg": result.fields.wpl.data,
-                        "start": result.init
+                        "start": result.fields.words.init
                     }));
                 }
                 else{
@@ -501,9 +654,9 @@ var stats = function(dbot){
                     event.reply(dbot.t("lines_percent", {
                         "user": result.primary,
                         "chan": event.channel,
-                        "percent": results.fields.lincent.data,
-                        "lines": results.fields.lines.data,
-                        "start": result.init
+                        "percent": result.fields.lincent.data,
+                        "lines": result.fields.lines.data,
+                        "start": result.fields.lines.init
                     }));
                 }
                 else{
@@ -520,99 +673,92 @@ var stats = function(dbot){
             }
         },
 
-        '~active': function(event){
-            if(!userStats.hasOwnProperty(event.server)) return;
-
-            if(event.params[1]){
-                var input = dbot.api.users.resolveUser(event.server, event.params[1], true);
-                if(userStats[event.server].hasOwnProperty(input) && userStats[event.server][input].hasOwnProperty(event.channel)){
-                    var max = -1;
-                    var max_day = -1;
-                    var max_hour = -1;
-                    for(var i=0; i<=6; i++) {
-                        for(var j=0; j<=23; j++){
-                            if(userStats[event.server][input][event.channel]["freq"][i][j] > max){
-                                max = userStats[event.server][input][event.channel]["freq"][i][j];
-                                max_day = i;
-                                max_hour = j;
-                            }
-                        }
-                    }
-                    var start = max_hour;
-                    var end = max_hour + 1;
-                    if(start == 23){
-                        end = "00";
-                    }
-
-                    if(max > 0){
-                        event.reply(dbot.t("hours_active", {
-                            "name": input,
-                            "day": days[max_day],
-                            "start_hour": start,
-                            "end_hour": end,
-                            "start": formatDate(userStats[event.server][input][event.channel]["startstamp"]),
-                            "tz": getTimezone(userStats[event.server][input][event.channel]["startstamp"])}
-                        ));
-                    }
-                }
-                else{
-                    event.reply(dbot.t("no_data", {
-                        "user": input}
-                    ));
-                }
-            }
-            else{
-                if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
-                var max = -1;
-                var max_day = -1;
-                var max_hour = -1;
-                for(var i=0; i<=6; i++) {
-                    for(var j=0; j<=23; j++){
-                        if(chanStats[event.server][event.channel]["freq"][i][j] > max){
-                            max = chanStats[event.server][event.channel]["freq"][i][j];
-                            max_day = i;
-                            max_hour = j;
-                        }
-                    }
-                }
-                var start = max_hour;
-                var end = max_hour + 1;
-                if(start == 23){
-                    end = "00";
-                }
-
-                if(max > 0){
-                    event.reply(dbot.t("hours_active", {
-                        "name": event.channel,
-                        "day": days[max_day],
-                        "start_hour": start,
-                        "end_hour": end,
-                        "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
-                        "tz": getTimezone(chanStats[event.server][event.channel]["startstamp"])}
-                    ));
-                }
-            }
-        },
+          //TODO(samstudio8) Sat 13 Jan
+          // Removed access to ~active until I can decide how the API will support
+          // calls to it as we head toward to end of Issue #43
+ //       '~active': function(event){
+ //           if(!userStats.hasOwnProperty(event.server)) return;
+ //
+ //           if(event.params[1]){
+ //               var input = dbot.api.users.resolveUser(event.server, event.params[1], true);
+ //               if(userStats[event.server].hasOwnProperty(input) && userStats[event.server][input].hasOwnProperty(event.channel)){
+ //                   var max = -1;
+ //                   var max_day = -1;
+ //                   var max_hour = -1;
+ //                   for(var i=0; i<=6; i++) {
+ //                       for(var j=0; j<=23; j++){
+ //                           if(userStats[event.server][input][event.channel]["freq"][i][j] > max){
+ //                               max = userStats[event.server][input][event.channel]["freq"][i][j];
+ //                               max_day = i;
+ //                               max_hour = j;
+ //                           }
+ //                       }
+ //                   }
+ //                   var start = max_hour;
+ //                   var end = max_hour + 1;
+ //                   if(start == 23){
+ //                       end = "00";
+ //                   }
+ //
+ //                   if(max > 0){
+ //                       event.reply(dbot.t("hours_active", {
+ //                           "name": input,
+ //                           "day": days[max_day],
+ //                           "start_hour": start,
+ //                           "end_hour": end,
+ //                           "start": formatDate(userStats[event.server][input][event.channel]["startstamp"]),
+ //                           "tz": getTimezone(userStats[event.server][input][event.channel]["startstamp"])}
+ //                       ));
+ //                   }
+ //               }
+ //               else{
+ //                   event.reply(dbot.t("no_data", {
+ //                       "user": input}
+ //                   ));
+ //               }
+ //           }
+ //           else{
+ //               if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
+ //               var max = -1;
+ //               var max_day = -1;
+ //               var max_hour = -1;
+ //               for(var i=0; i<=6; i++) {
+ //                   for(var j=0; j<=23; j++){
+ //                       if(chanStats[event.server][event.channel]["freq"][i][j] > max){
+ //                           max = chanStats[event.server][event.channel]["freq"][i][j];
+ //                           max_day = i;
+ //                           max_hour = j;
+ //                       }
+ //                   }
+ //               }
+ //               var start = max_hour;
+ //               var end = max_hour + 1;
+ //               if(start == 23){
+ //                   end = "00";
+ //               }
+ //
+ //               if(max > 0){
+ //                   event.reply(dbot.t("hours_active", {
+ //                       "name": event.channel,
+ //                       "day": days[max_day],
+ //                       "start_hour": start,
+ //                       "end_hour": end,
+ //                       "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
+ //                       "tz": getTimezone(chanStats[event.server][event.channel]["startstamp"])}
+ //                   ));
+ //               }
+ //           }
+ //       },
 
         '~loudest': function(event){
-            if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
-
             if(!event.params[1]){
-                var user_sort = Object.prototype.sort(userStats[event.server], function(key, obj) {
-                    if(obj[key].hasOwnProperty(event.channel)){
-                        return ((obj[key][event.channel].total_lines 
-                            / chanStats[event.server][event.channel]["total_lines"])*100).numberFormat(2);
-                    }
-                    else{ return -1; }
-                });
-                var leaderboard_str = leaderboarder(user_sort, 5, "%");
-
-                if(leaderboard_str.length > 0){
+                var result = api.leaderboarder(event.server, null, event.channel, "loudest", 5, false);
+                if(result){
                     event.reply(dbot.t("loudest", {
                         "chan": event.channel,
-                        "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
-                        "list": leaderboard_str}
-                    ));
+                        "start": result.init,
+                        "list": result.leaderboard
+                    }));
                 }
             }
             else{
@@ -624,24 +770,14 @@ var stats = function(dbot){
         },
 
         '~verbose': function(event){
-            if(!userStats.hasOwnProperty(event.server)) return;
-
             if(!event.params[1]){
-                var wpl_sort = Object.prototype.sort(userStats[event.server], function(key, obj) {
-                    if(obj[key].hasOwnProperty(event.channel)){
-                        return (userStats[event.server][key][event.channel]["total_words"] 
-                            / userStats[event.server][key][event.channel]["total_lines"]).numberFormat(2);
-                    }
-                    else{ return -1; }
-                });
-                var leaderboard_str = leaderboarder(wpl_sort, 5, "wpl");
-
-                if(leaderboard_str.length > 0){
+                var result = api.leaderboarder(event.server, null, event.channel, "verbose", 5, false);
+                if(result){
                     event.reply(dbot.t("verbose", {
                         "chan": event.channel,
-                        "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
-                        "list": leaderboard_str}
-                    ));
+                        "start": result.init,
+                        "list": result.leaderboard
+                    }));
                 }
             }
             else{
@@ -653,23 +789,14 @@ var stats = function(dbot){
         },
 
         '~popular': function(event){
-            if(!userStats.hasOwnProperty(event.server)) return;
-
             if(!event.params[1]){
-                var mentions_sort = Object.prototype.sort(userStats[event.server], function(key, obj) {
-                    if(obj[key].hasOwnProperty(event.channel)){
-                        return obj[key][event.channel]["in_mentions"];
-                    }
-                    else{ return -1; }
-                });
-                var leaderboard_str = leaderboarder(mentions_sort);
-
-                if(leaderboard_str.length > 0){
+                var result = api.leaderboarder(event.server, null, event.channel, "popular", 5, false);
+                if(result){
                     event.reply(dbot.t("popular", {
                         "chan": event.channel,
-                        "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
-                        "list": leaderboard_str}
-                    ));
+                        "start": result.init,
+                        "list": result.leaderboard
+                    }));
                 }
             }
             else{
@@ -681,36 +808,27 @@ var stats = function(dbot){
         },
 
         '~inmentions': function(event){
-            if(!userStats.hasOwnProperty(event.server)) return;
             if(event.params[1]){
-                var user = dbot.api.users.resolveUser(event.server, event.params[1], true);
-                if(userStats[event.server].hasOwnProperty(user)){
-                    var mentions_sort = Object.prototype.sort(userStats[event.server], function(key, obj) {
-                        if(obj[key].hasOwnProperty(event.channel) && obj[key][event.channel]["out_mentions"].hasOwnProperty(user)){
-                            return obj[key][event.channel]["out_mentions"][user];
-                        }
-                        else{ return -1; }
-                    });
-                    var leaderboard_str = leaderboarder(mentions_sort);
-
-                    if(leaderboard_str.length > 0){
+                var result = api.leaderboarder(event.server, event.params[1], event.channel, "in_mentions", 5, false);
+                if(result){
+                    if(result.places > 0){
                         event.reply(dbot.t("in_mentions", {
-                            "user": user,
+                            "user": event.params[1],
                             "chan": event.channel,
-                            "start": formatDate(userStats[event.server][user][event.channel]["startstamp"]),
-                            "list": leaderboard_str}
-                        ));
+                            "start": result.init,
+                            "list": result.leaderboard
+                        }));
                     }
                     else{
                         event.reply(dbot.t("no_in_mentions", {
-                            "user": user}
-                        ));
+                            "user": event.params[1].toLowerCase()
+                        }));
                     }
                 }
                 else{
                     event.reply(dbot.t("no_data", {
-                        "user": user}
-                    ));
+                        "user": event.params[1].toLowerCase()
+                    }));
                 }
             }
             else{
@@ -722,34 +840,27 @@ var stats = function(dbot){
         },
 
         '~outmentions': function(event){
-            if(!userStats.hasOwnProperty(event.server)) return;
             if(event.params[1]){
-                var user = dbot.api.users.resolveUser(event.server, event.params[1], true);
-                if(userStats[event.server].hasOwnProperty(user) && userStats[event.server][user][event.channel]){
-                    var mentions = userStats[event.server][user][event.channel]["out_mentions"];
-                    var mentions_sort = Object.prototype.sort(mentions, function(key, obj) {
-                        return obj[key];
-                    });
-                    var leaderboard_str = leaderboarder(mentions_sort);
-
-                    if(leaderboard_str.length > 0){
+                var result = api.leaderboarder(event.server, event.params[1], event.channel, "out_mentions", 5, false);
+                if(result){
+                    if(result.places > 0){
                         event.reply(dbot.t("out_mentions", {
-                            "user": user,
+                            "user": event.params[1],
                             "chan": event.channel,
-                            "start": formatDate(userStats[event.server][user][event.channel]["startstamp"]),
-                            "list": leaderboard_str}
-                        ));
+                            "start": result.init,
+                            "list": result.leaderboard
+                        }));
                     }
                     else{
                         event.reply(dbot.t("no_out_mentions", {
-                            "user": user}
-                        ));
+                            "user": event.params[1].toLowerCase()
+                        }));
                     }
                 }
                 else{
                     event.reply(dbot.t("no_data", {
-                        "user": user}
-                    ));
+                        "user": event.params[1].toLowerCase()
+                    }));
                 }
             }
             else{
@@ -761,21 +872,25 @@ var stats = function(dbot){
         },
 
         '~last': function(event){
-            if(!userStats.hasOwnProperty(event.server)) return;
             if(event.params[1]){
-                var user = dbot.api.users.resolveUser(event.server, event.params[1], true);
-                if(userStats[event.server].hasOwnProperty(user) && userStats[event.server][user][event.channel]){
-                    event.reply(user+" last seen: "+formatDate(userStats[event.server][user][event.channel]["last"], 1));
+                var result = api.getUserStat(event.server, event.params[1], event.channel, ["lines"]);
+                if(result){
+                    event.reply(dbot.t("user_last", {
+                        "user": result.primary,
+                        "chan": event.channel,
+                        "last": result.fields.lines.last.full()
+                    }));
                 }
                 else{
                     event.reply(dbot.t("no_data", {
-                        "user": user}
-                    ));
+                        "user": event.params[1].toLowerCase()
+                    }));
                 }
             }
             else{
+                //TODO(samstudio8) Update
                 if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
-                event.reply(event.channel+" last activity: "+formatDate(chanStats[event.server][event.channel]["last"], 1));
+                event.reply(event.channel+" last activity: "+chanStats[event.server][event.channel].lines.time.last.full());
             }
         }
     };
@@ -785,14 +900,15 @@ var stats = function(dbot){
         _.each(userStats, function(server, serverName){
             _.each(userStats[serverName], function(user, userName){
                 _.each(userStats[serverName][userName], function(chan, chanName){
+                    var fieldFactoryUserProduct = fieldFactoryOutlet("user");
                     _.defaults(userStats[serverName][userName][chanName], fieldFactoryUserProduct);
                     //TODO(samstudio8) Doom, it was going so well.
                     _.each(userStats[serverName][userName][chanName], function(field, fieldName){
                         _.defaults(userStats[serverName][userName][chanName][fieldName], fieldFactoryUserProduct[fieldName]);
                         userStats[serverName][userName][chanName][fieldName].toString = fieldFactoryUserProduct[fieldName].toString;
                         if(_.has(fieldFactoryUserProduct[fieldName], "time")){
-                            userStats[serverName][userName][chanName][fieldName].time.init.toString = fieldFactoryUserProduct[fieldName].time.init.toString;
-                            userStats[serverName][userName][chanName][fieldName].time.last.toString = fieldFactoryUserProduct[fieldName].time.last.toString;
+                            _.defaults(userStats[serverName][userName][chanName][fieldName].time.init, fieldFactoryUserProduct[fieldName].time.init);
+                            _.defaults(userStats[serverName][userName][chanName][fieldName].time.last, fieldFactoryUserProduct[fieldName].time.last);
                         }
                     });
                 });
@@ -801,14 +917,15 @@ var stats = function(dbot){
 
         _.each(chanStats, function(server, serverName){
             _.each(chanStats[serverName], function(chan, chanName){
+                var fieldFactoryChanProduct = fieldFactoryOutlet("chan");
                 _.defaults(chanStats[serverName][chanName], fieldFactoryChanProduct);
                 //TODO(samstudio8) Doom, not chan stats too!
                 _.each(chanStats[serverName][chanName], function(field, fieldName){
                     _.defaults(chanStats[serverName][chanName][fieldName], fieldFactoryChanProduct[fieldName]);
                     chanStats[serverName][chanName][fieldName].toString = fieldFactoryChanProduct[fieldName].toString;
                     if(_.has(fieldFactoryChanProduct[fieldName], "time")){
-                        chanStats[serverName][chanName][fieldName].time.init.toString = fieldFactoryChanProduct[fieldName].time.init.toString;
-                        chanStats[serverName][chanName][fieldName].time.last.toString = fieldFactoryChanProduct[fieldName].time.last.toString;
+                        _.defaults(chanStats[serverName][chanName][fieldName].time.init, fieldFactoryChanProduct[fieldName].time.init);
+                        _.defaults(chanStats[serverName][chanName][fieldName].time.last, fieldFactoryChanProduct[fieldName].time.last);
                     }
                 });
             });
@@ -844,7 +961,7 @@ var stats = function(dbot){
             }
             if(!userStats[event.server][user].hasOwnProperty(event.channel)){
                 userStats[event.server][user][event.channel] = {}
-                _.defaults(userStats[event.server][user][event.channel], fieldFactoryUserProduct);
+                _.defaults(userStats[event.server][user][event.channel], fieldFactoryOutlet("user"));
             }
             userStats[event.server][user][event.channel]["freq"].add({"day": event.time.getDay(), "hour": event.time.getHours(), "inc": 1});
             userStats[event.server][user][event.channel]["lines"].add(1);
@@ -853,7 +970,7 @@ var stats = function(dbot){
             // Channel-centric Stats
             if(!chanStats[event.server].hasOwnProperty(event.channel)){
                 chanStats[event.server][event.channel] = {}
-                _.defaults(chanStats[event.server][event.channel], fieldFactoryChanProduct);
+                _.defaults(chanStats[event.server][event.channel], fieldFactoryOutlet("chan"));
             }
             chanStats[event.server][event.channel]["freq"].add({"day": event.time.getDay(), "hour": event.time.getHours(), "inc": 1});
             chanStats[event.server][event.channel]["lines"].add(1);
@@ -866,11 +983,16 @@ var stats = function(dbot){
                 for (var i = 0; i < cat.length; i++){
                     var name = cat[i];
                     var mentioned = dbot.api.users.resolveUser(event.server, name, true);
-                    if(userStats[event.server].hasOwnProperty(mentioned) && userStats[event.server][mentioned][event.channel]){
+                    if(userStats[event.server].hasOwnProperty(mentioned) && userStats[event.server][mentioned].hasOwnProperty(event.channel)){
                         var toMatch = "( |^)"+name.escape().toLowerCase()+":?(?=\\s|$)";
                         if(event.message.toLowerCase().search(toMatch) > -1){
-                            userStats[event.server][user][event.channel]["out_mentions"].add({"mentioned": mentioned, "inc": 1});
-                            userStats[event.server][mentioned][event.channel]["in_mentions"].add(1);
+                            //userStats[event.server][user][event.channel]["out_mentions"].add({"mentioned": mentioned, "inc": 1});
+                            //userStats[event.server][mentioned][event.channel]["in_mentions"].add(1);
+                            if(!_.has(userStats[event.server][user][event.channel]["out_mentions"].data, mentioned)){
+                                userStats[event.server][user][event.channel]["out_mentions"].data[mentioned] = 0;
+                            }
+                            userStats[event.server][user][event.channel]["out_mentions"].data[mentioned] += 1;
+                            userStats[event.server][mentioned][event.channel]["in_mentions"].data += 1;
                         }
                     }
                 }
