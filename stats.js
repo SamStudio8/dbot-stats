@@ -4,6 +4,7 @@ var stats = function(dbot){
 
     var _ = require('underscore')._
 
+    // Detail the structure of userStats.server.user.channel dbKeys
     var user_structure = {
         "lines": {},
         "words": {},
@@ -44,15 +45,10 @@ var stats = function(dbot){
                 }
                 return freq;
             },
-            //TODO Get field passes to format
-            "format": function(data, day, hour){
-                if(!day || !hour) return -1;
-                if(day >= 0 && day <= 6 && hour >= 0 && hour <= 23){
-                    return data[day][hour].numberFormat(0);
-                }
-                else{
-                    return -1;
-                }
+            "get": function(getreq){
+                if(!getreq.day || !getreq.hour) return;
+                if(getreq.day < 0 && getreq.day > 6 && getreq.hour < 0 && getreq.hour > 23) return;
+                return this.format(this.data[getreq.day][getreq.hour]);
             },
             "add": function(addreq){
                 if(!addreq.day || !addreq.hour || !addreq.inc) return;
@@ -63,9 +59,6 @@ var stats = function(dbot){
         "in_mentions": {},
         "out_mentions": {
             "def": {},
-            "format": function(data){
-                return data.numberFormat(0);
-            },
             "add": function(addreq){
                 if(!addreq.mentioned || !addreq.inc) return;
                 if(!_.has(this.data, addreq.mentioned)){
@@ -88,6 +81,7 @@ var stats = function(dbot){
         }
     };
 
+    // Detail the structure of chanStats.server.channel dbKeys
     var chan_structure = {
         "lines": {},
         "words": {},
@@ -102,14 +96,10 @@ var stats = function(dbot){
                 }
                 return freq;
             },
-            "format": function(data, day, hour){
-                if(!day || !hour) return -1;
-                if(day >= 0 && day <= 6 && hour >= 0 && hour <= 23){
-                    return data[day][hour].numberFormat(0);
-                }
-                else{
-                    return -1;
-                }
+            "get": function(getreq){
+                if(!getreq.day || !getreq.hour) return;
+                if(getreq.day < 0 && getreq.day > 6 && getreq.hour < 0 && getreq.hour > 23) return;
+                return this.format(this.data[getreq.day][getreq.hour]);
             },
             "add": function(addreq){
                 if(!addreq.day || !addreq.hour || !addreq.inc) return;
@@ -131,7 +121,7 @@ var stats = function(dbot){
     var fieldFactory = function(key, toField){
 
         // Handle the default value for the field
-        var def = 0;
+        var def;
         if(toField.def){
             if(_.isFunction(toField.def)){
                 def = toField.def.apply();
@@ -141,8 +131,9 @@ var stats = function(dbot){
             }
         }
 
-        // If a field does not define a format method, the data is to be
-        // returned as a number with thousands seperators
+        // If a field defines a format method, this will override the default
+        // behaviour which returns data as a number with zero decimal places
+        // and thousands separators
         var format;
         if(!toField.format){
             format = function(data){
@@ -154,6 +145,8 @@ var stats = function(dbot){
         }
 
         // If a field defines an add method, this will override the default
+        // behaviour of incrementing the contents of the data attribute by the
+        // parameter provided upon a call to add
         var __add;
         if(!toField.add){
             __add = function(inc){
@@ -165,6 +158,7 @@ var stats = function(dbot){
         }
 
         // If a field defines a get method, this will override the default
+        // behaviour of returning the data attribute
         var get;
         if(!toField.get){
             get = function(getreq){
@@ -783,7 +777,6 @@ var stats = function(dbot){
                 if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
                 event.reply(event.channel+" last activity: "+formatDate(chanStats[event.server][event.channel]["last"], 1));
             }
-            
         }
     };
 
