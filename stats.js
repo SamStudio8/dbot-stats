@@ -58,13 +58,8 @@ var stats = function(dbot){
                 if(userStats[event.server].hasOwnProperty(mentioned) && userStats[event.server][mentioned].hasOwnProperty(event.channel)){
                     var toMatch = "( |^)"+name.escape().toLowerCase()+":?(?=\\s|$)";
                     if(event.message.toLowerCase().search(toMatch) > -1){
-                        //userStats[event.server][user][event.channel]["out_mentions"].add({"mentioned": mentioned, "inc": 1});
-                        //userStats[event.server][mentioned][event.channel]["in_mentions"].add(1);
-                        if(!_.has(userStats[event.server][user][event.channel]["out_mentions"].data, mentioned)){
-                            userStats[event.server][user][event.channel]["out_mentions"].data[mentioned] = 0;
-                        }
-                        userStats[event.server][user][event.channel]["out_mentions"].data[mentioned] += 1;
-                        userStats[event.server][mentioned][event.channel]["in_mentions"].data += 1;
+                        userStats[event.server][user][event.channel]["out_mentions"].add({"mentioned": mentioned, "inc": 1});
+                        userStats[event.server][mentioned][event.channel]["in_mentions"].add(1);
                     }
                 }
             }

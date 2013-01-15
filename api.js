@@ -179,8 +179,7 @@ var api = function(dbot) {
                         //TODO(samstudio8) Update to underscore.js when you are
                         //less angry at it...
                         sorted = Object.prototype.sort(dbot.api.stats.getChannelUserStats(server, channel), function(key, obj) {
-                                //return obj[key][user_chan_boards[field].field].get({"mentioned": primary});
-                                return obj[key][user_chan_boards[field].field].data[primary];
+                                return obj[key][user_chan_boards[field].field].get({"mentioned": primary});
                             }
                         );
                     }
