@@ -147,6 +147,12 @@ var stats = function(dbot){
         });
         dbot.save();
     }.bind(this);
+    
+    this.onDestroy = function() {
+        // Destroy structures cache so it can be reloaded with changes applied
+        var cacheKey = require.resolve('./structures');                                                                                                                   
+        delete require.cache[cacheKey];
+    }.bind(this);
 };
 
 exports.fetch = function(dbot){
