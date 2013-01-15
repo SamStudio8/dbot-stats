@@ -107,8 +107,8 @@ var fieldFactoryOutlet = function(request, api){
             "get": function(getreq){
                 if(!getreq) return;
                 if(!getreq.server || !getreq.user || !getreq.channel) return -1;
-                var user_lines = api.getUserStat(getreq.server, getreq.user, getreq.channel, ["lines"]);
-                var chan_lines = api.getChanStat(getreq.server, getreq.channel, ["lines"]);
+                var user_lines = api.getUserStats(getreq.server, getreq.user, getreq.channel, ["lines"]);
+                var chan_lines = api.getChanStats(getreq.server, getreq.channel, ["lines"]);
                 if(!user_lines || !chan_lines) return -1;
                 return this.format((user_lines.fields.lines.raw / chan_lines.fields.lines.raw)*100);
             },
@@ -120,8 +120,8 @@ var fieldFactoryOutlet = function(request, api){
             "get": function(getreq){
                 if(!getreq) return;
                 if(!getreq.server || !getreq.user || !getreq.channel) return -1;
-                var user_words = api.getUserStat(getreq.server, getreq.user, getreq.channel, ["words"]);
-                var user_lines = api.getUserStat(getreq.server, getreq.user, getreq.channel, ["lines"]);
+                var user_words = api.getUserStats(getreq.server, getreq.user, getreq.channel, ["words"]);
+                var user_lines = api.getUserStats(getreq.server, getreq.user, getreq.channel, ["lines"]);
                 if(!user_words || !user_lines) return -1;
                 return this.format(user_words.fields.words.raw / user_lines.fields.lines.raw);
             },
@@ -187,8 +187,8 @@ var fieldFactoryOutlet = function(request, api){
             "get": function(getreq){
                 if(!getreq) return;
                 if(!getreq.server || !getreq.channel) return -1;
-                var chan_words = api.getChanStat(getreq.server, getreq.channel, ["words"]);
-                var chan_lines = api.getChanStat(getreq.server, getreq.channel, ["lines"]);
+                var chan_words = api.getChanStats(getreq.server, getreq.channel, ["words"]);
+                var chan_lines = api.getChanStats(getreq.server, getreq.channel, ["lines"]);
                 if(!chan_words || !chan_lines) return -1;
                 return this.format(chan_words.fields.words.raw / chan_lines.fields.lines.raw);
             },

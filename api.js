@@ -54,24 +54,27 @@ var api = function(dbot) {
                 if(!_.has(dbot.db.userStats, request.server)
                         || !_.has(dbot.db.chanStats, request.server)) return false;
 
+                var userStats = dbot.db.userStats[request.server];
+                var chanStats = dbot.db.chanStats[request.server];
+
+                //TODO(samstudio8) Use the API
                 if(request.user && request.channel){
                     var primary = dbot.api.users.resolveUser(request.server, request.user, true);
-                    if(_.has(userStats[request.server], primary)
-                            && _.has(userStats[request.server][primary], request.channel)){
-                        //TODO(samstudio8) Use the API
-                        return dateActive(userStats[request.server][primary][request.channel].lines.last.stamp, inLast);
+                    if(_.has(userStats, primary)
+                            && _.has(userStats[primary], request.channel)){
+                        return dateActive(userStats[primary][request.channel].lines.time.last.stamp, inLast);
                     }
                 }
                 else if(request.user){
                     var primary = dbot.api.users.resolveUser(request.server, request.user, true);
-                    if(!_.has(!userStats[request.server], primary)) return false;
-                    _.each(userStats[request.server][primary], function(chan, chanName){
-                        if(dateActive(userStats[request.server][primary][curr_chan].lines.last.stamp, inLast)) return true;
+                    if(!_.has(!userStats, primary)) return false;
+                    _.each(userStats[primary], function(chan, chanName){
+                        if(dateActive(userStats[primary][curr_chan].lines.time.last.stamp, inLast)) return true;
                     });
                 }
                 else if(request.channel){
-                    if(!_.has(chanStats[request.server], request.channel)) return false;
-                    return dateActive(chanStats[request.server][request.channel].lines.last.stamp, inLast);
+                    if(!_.has(chanStats, request.channel)) return false;
+                    return dateActive(chanStats[request.channel].lines.time.last.stamp, inLast);
                 }
             }
             // Request was missing a component or dbKey does not exist
@@ -85,7 +88,7 @@ var api = function(dbot) {
          * being reference to the userStats.server.user.channel dbKey for that
          * particular user.
          */
-        'getChannelUserStats': function(server, channel){
+        '__getChanUsers': function(server, channel){
             if(!server || !channel) return [];
             if(!_.has(dbot.db.userStats, server) 
                     || !_.has(dbot.db.chanStats, server)
@@ -178,7 +181,7 @@ var api = function(dbot) {
                     if(user_chan_boards[field].match == true){
                         //TODO(samstudio8) Update to underscore.js when you are
                         //less angry at it...
-                        sorted = Object.prototype.sort(dbot.api.stats.getChannelUserStats(server, channel), function(key, obj) {
+                        sorted = Object.prototype.sort(dbot.api.stats.__getChanUsers(server, channel), function(key, obj) {
                                 return obj[key][user_chan_boards[field].field].get({"mentioned": primary});
                             }
                         );
@@ -215,7 +218,7 @@ var api = function(dbot) {
             }
             else if(channel){
                 if(!_.has(chanStats, channel)) return null;
-                var users = dbot.api.stats.getChannelUserStats(server, channel);
+                var users = dbot.api.stats.__getChanUsers(server, channel);
                 var sorted = _.chain(users)
                     .pairs()
                     .sortBy(function(item) { 
@@ -249,7 +252,7 @@ var api = function(dbot) {
          * Query the data store for a particular statistic pertaining to a
          * channel on a given server.
          */
-        'getChanStat': function(server, channel, fields){
+        'getChanStats': function(server, channel, fields){
             if(!_.has(dbot.db.userStats, server) 
                     || !_.has(dbot.db.chanStats, server)) return null;
 
@@ -285,8 +288,9 @@ var api = function(dbot) {
          * Query the data store with a list of statistics pertaining to a
          * particular user on a given channel and server.
          */
-        'getUserStat': function(server, nick, channel, fields){
-            if(!server || !nick || !channel || !fields) return null;
+        'getUserStats': function(server, nick, channel, fields){
+            //TODO(samstudio8) If no fields, return all keys
+            if(!server || !nick || !channel) return null;
             if(!_.has(dbot.db.userStats, server) 
                     || !_.has(dbot.db.chanStats, server)) return null;
 
@@ -329,53 +333,31 @@ var api = function(dbot) {
             return reply;
         },
 
-        /**
-         * //TODO(samstudio8): DEPRECATED @ v0.2
-         * This API function will no longer be supported at stats/v0.2, the
-         * web interface is to be updated accordingly to accept the new API
-         * reply results object.
-         *
-         * Legacy API function allowing the users module to query for various
-         * user statistics in a particular format for the web interface.
-         */
-        'getUserStats': function(server, nick, channel, fields){
-            //TODO(samstudio8)
-            //The input for this function should be an object, this will also make
-            //handling calls to any required internalAPI functions below tidier
-            var primary = dbot.api.users.resolveUser(server, nick, true);
-            var user = {
-                'display': primary,
-                'primary': primary
-            } 
-            if(primary != nick.toLowerCase()){
-                user.display = nick.toLowerCase()+" ("+primary+")";
-            }
-            if(!chanStats.hasOwnProperty(server) || !userStats.hasOwnProperty(server)) return user;
+        'getChanUsersStats': function(server, channel, fields){
+            //TODO(samstudio8) If no fields, return all keys
+            if(!server || !channel) return null;
+            if(!_.has(dbot.db.userStats, server) 
+                    || !_.has(dbot.db.chanStats, server)) return null;
 
-            if(!fields){
-                //Use all available fields if a specific list was not defined
-                var fields = Object.keys(internalAPI);
-            }
-            if(!userStats[server].hasOwnProperty(primary)
-                    || !userStats[server][primary].hasOwnProperty(channel)
-                    || !chanStats[server].hasOwnProperty(channel)) return user;
-            for(var i=0; i<fields.length; i++){
-                var curr_field = fields[i].toLowerCase();
-                if(internalAPI.hasOwnProperty(curr_field)){
-                    if(typeof(internalAPI[curr_field]) == "function"){
-                        var request = {
-                            "server": server,
-                            "primary": primary,
-                            "channel": channel};
-                        user[curr_field] = internalAPI[curr_field](request);
-                    }
-                    else{
-                        user[curr_field] = userStats[server][primary][channel][curr_field];
-                    }
+            var reply = {
+                "users": {}
+            };
+
+            var users = dbot.api.stats.__getChanUsers(server, channel);
+            _.each(users, function(user, userName){
+                var userReply = dbot.api.stats.getUserStats(server, userName, channel, fields);
+                if(userReply){
+                    reply.users[userReply.primary] = userReply;
+                    //TODO(reality) dbot.api.users.online
+                    reply.users[userReply.primary].online = true;
+                    reply.users[userReply.primary].active = dbot.api.stats.isActive({
+                                                        'server': server,
+                                                        'user': userReply.primary,
+                                                        'channel': channel});
                 }
-            }
-            return user;
-        }
+            });
+            return reply;
+        },
     };
 };
 

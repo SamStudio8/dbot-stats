@@ -4,7 +4,7 @@ var commands = function(dbot){
     return {
         '~lines': function(event){
             if(event.params[1]){
-                var result = this.api.getUserStat(event.server, event.params[1], event.channel, ["lines"]);
+                var result = this.api.getUserStats(event.server, event.params[1], event.channel, ["lines"]);
                 if(result){
                     event.reply(dbot.t("user_lines", {
                         "user": result.primary,
@@ -20,7 +20,7 @@ var commands = function(dbot){
                 }
             }
             else{
-                var result = this.api.getChanStat(event.server, event.channel, ["lines"]);
+                var result = this.api.getChanStats(event.server, event.channel, ["lines"]);
                 if(result){
                     event.reply(dbot.t("chan_lines", {
                         "chan": event.channel,
@@ -33,7 +33,7 @@ var commands = function(dbot){
 
         '~words': function(event){
             if(event.params[1]){
-                var result = this.api.getUserStat(event.server, event.params[1], event.channel, ["words", "wpl"]);
+                var result = this.api.getUserStats(event.server, event.params[1], event.channel, ["words", "wpl"]);
                 if(result){
                     event.reply(dbot.t("user_words", {
                         "user": result.primary,
@@ -50,7 +50,7 @@ var commands = function(dbot){
                 }
             }
             else{
-                var result = this.api.getChanStat(event.server, event.channel, ["words", "wpl"]);
+                var result = this.api.getChanStats(event.server, event.channel, ["words", "wpl"]);
                 if(result){
                     event.reply(dbot.t("chan_words", {
                         "chan": event.channel,
@@ -64,7 +64,7 @@ var commands = function(dbot){
 
         '~lincent': function(event){
             if(event.params[1]){
-                var result = this.api.getUserStat(event.server, event.params[1], event.channel, ["lincent", "lines"]);
+                var result = this.api.getUserStats(event.server, event.params[1], event.channel, ["lincent", "lines"]);
                 if(result){
                     event.reply(dbot.t("lines_percent", {
                         "user": result.primary,
@@ -288,7 +288,7 @@ var commands = function(dbot){
 
         '~last': function(event){
             if(event.params[1]){
-                var result = this.api.getUserStat(event.server, event.params[1], event.channel, ["lines"]);
+                var result = this.api.getUserStats(event.server, event.params[1], event.channel, ["lines"]);
                 if(result){
                     event.reply(dbot.t("user_last", {
                         "user": result.primary,
@@ -303,7 +303,7 @@ var commands = function(dbot){
                 }
             }
             else{
-                var result = this.api.getChanStat(event.server, event.channel, ["lines"]);
+                var result = this.api.getChanStats(event.server, event.channel, ["lines"]);
                 if(result){
                     event.reply(dbot.t("chan_last", {
                         "chan": event.channel,
