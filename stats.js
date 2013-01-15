@@ -87,6 +87,7 @@ var stats = function(dbot){
 
     this.onLoad = function(){
         var api = this.api;
+
         //TODO(samstudio8): Also delete no longer required fields
         _.each(userStats, function(server, serverName){
             _.each(userStats[serverName], function(user, userName){
@@ -126,6 +127,11 @@ var stats = function(dbot){
             });
         });
         dbot.save();
+
+        // Add API Hooks
+        dbot.api.command.addHook('~setaliasparent', fixStats);
+        dbot.api.command.addHook('~mergeusers', fixStats);
+
     }.bind(this);
     
     this.onDestroy = function() {
