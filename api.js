@@ -348,8 +348,11 @@ var api = function(dbot) {
                 var userReply = dbot.api.stats.getUserStats(server, userName, channel, fields);
                 if(userReply){
                     reply.users[userReply.primary] = userReply;
-                    //TODO(reality) dbot.api.users.online
-                    reply.users[userReply.primary].online = true;
+                    reply.users[userReply.primary].online = dbot.api.users.isOnline(
+                                                        server,
+                                                        userReply.primary,
+                                                        channel,
+                                                        true);
                     reply.users[userReply.primary].active = dbot.api.stats.isActive({
                                                         'server': server,
                                                         'user': userReply.primary,
