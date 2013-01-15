@@ -55,7 +55,9 @@ var stats = function(dbot){
             for (var i = 0; i < cat.length; i++){
                 var name = cat[i];
                 var mentioned = dbot.api.users.resolveUser(event.server, name, true);
-                if(userStats[event.server].hasOwnProperty(mentioned) && userStats[event.server][mentioned].hasOwnProperty(event.channel)){
+                if(user != mentioned
+                        && userStats[event.server].hasOwnProperty(mentioned) 
+                        && userStats[event.server][mentioned].hasOwnProperty(event.channel)){
                     var toMatch = "( |^)"+name.escape().toLowerCase()+":?(?=\\s|$)";
                     if(event.message.toLowerCase().search(toMatch) > -1){
                         userStats[event.server][user][event.channel]["out_mentions"].add({"mentioned": mentioned, "inc": 1});
