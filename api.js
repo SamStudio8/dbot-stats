@@ -17,7 +17,8 @@ var api = function(dbot) {
 
             if(_.has(userStats, name)){
                 var primary = dbot.api.users.resolveUser(server, alias, true);
-                alias = alias.trim().toLowerCase;
+                primary = primary.toLowerCase();
+                alias = alias.trim().toLowerCase();
 
                 // Rename userStats key
                 userStats[primary] = userStats[alias];
@@ -60,6 +61,7 @@ var api = function(dbot) {
                 //TODO(samstudio8) Use the API
                 if(request.user && request.channel){
                     var primary = dbot.api.users.resolveUser(request.server, request.user, true);
+                    primary = primary.toLowerCase();
                     if(_.has(userStats, primary)
                             && _.has(userStats[primary], request.channel)){
                         return dateActive(userStats[primary][request.channel].lines.time.last.stamp, inLast);
@@ -67,6 +69,7 @@ var api = function(dbot) {
                 }
                 else if(request.user){
                     var primary = dbot.api.users.resolveUser(request.server, request.user, true);
+                    primary = primary.toLowerCase();
                     if(!_.has(!userStats, primary)) return false;
                     _.each(userStats[primary], function(chan, chanName){
                         if(dateActive(userStats[primary][curr_chan].lines.time.last.stamp, inLast)) return true;
@@ -170,6 +173,7 @@ var api = function(dbot) {
             
             if(user && channel){
                 var primary = dbot.api.users.resolveUser(server, user, true);
+                primary = primary.toLowerCase();
                 if(!_.has(chanStats, channel)
                         || !_.has(userStats, primary)
                         || !_.has(userStats[primary], channel)) return null;
@@ -298,6 +302,7 @@ var api = function(dbot) {
             var chanStats = dbot.db.chanStats[server];
 
             var primary = dbot.api.users.resolveUser(server, nick, true);
+            primary = primary.toLowerCase();
             var reqobj = {"server": server, "user": primary, "channel": channel};
 
             if(!_.has(userStats, primary)

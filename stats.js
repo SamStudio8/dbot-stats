@@ -24,7 +24,7 @@ var stats = function(dbot){
             chanStats[event.server] = {}
         }
 
-        var user = dbot.api.users.resolveUser(event.server, event.user, true);
+        var user = dbot.api.users.resolveUser(event.server, event.user, true).toLowerCase();
         var num_words = event.message.split(" ").filter(function(w, i, array) { return w.length > 0; }).length
 
         // User-centric Stats
@@ -60,7 +60,7 @@ var stats = function(dbot){
                     Object.keys(dbot.db.knownUsers[event.server].aliases));
             for (var i = 0; i < cat.length; i++){
                 var name = cat[i];
-                var mentioned = dbot.api.users.resolveUser(event.server, name, true);
+                var mentioned = dbot.api.users.resolveUser(event.server, name, true).toLowerCase();
                 if(user != mentioned
                         && userStats[event.server].hasOwnProperty(mentioned) 
                         && userStats[event.server][mentioned].hasOwnProperty(event.channel)){
