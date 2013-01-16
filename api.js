@@ -186,7 +186,7 @@ var api = function(dbot) {
                         //TODO(samstudio8) Update to underscore.js when you are
                         //less angry at it...
                         sorted = Object.prototype.sort(dbot.api.stats.__getChanUsers(server, channel), function(key, obj) {
-                                return obj[key][user_chan_boards[field].field].get({"mentioned": primary});
+                                return obj[key][user_chan_boards[field].field].getRaw({"mentioned": primary});
                             }
                         );
                     }
@@ -273,7 +273,7 @@ var api = function(dbot) {
                 if(_.has(chanStats[channel], field)){
                     fieldResults[field]["name"] = field;
                     fieldResults[field]["data"] = chanStats[channel][field].get(reqobj);
-                    fieldResults[field]["raw"] = chanStats[channel][field].data;
+                    fieldResults[field]["raw"] = chanStats[channel][field].getRaw(reqobj);
                     fieldResults[field]["init"] = chanStats[channel][field].time.init;
                     fieldResults[field]["last"] =  chanStats[channel][field].time.last;
                 }
@@ -321,7 +321,7 @@ var api = function(dbot) {
                 if(_.has(userStats[primary][channel], field)){
                     fieldResults[field]["name"] = field;
                     fieldResults[field]["data"] = userStats[primary][channel][field].get(reqobj);
-                    fieldResults[field]["raw"] = userStats[primary][channel][field].data;
+                    fieldResults[field]["raw"] = userStats[primary][channel][field].getRaw(reqobj);
                     fieldResults[field]["init"] = userStats[primary][channel][field].time.init;
                     fieldResults[field]["last"] =  userStats[primary][channel][field].time.last;
                 }
