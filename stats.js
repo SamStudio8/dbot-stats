@@ -7,10 +7,8 @@ var stats = function(dbot){
     var _ = require('underscore')._;
     var structure = require('./structures');
 
-    this.name = "stats";
-    this.ignorable = false;
     this.listener = function(event){
-        
+
         // Ignore command messages
         if(event.message[0] == "~"){
             return;
