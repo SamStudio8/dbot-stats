@@ -142,7 +142,7 @@ A successful reply will follow the following format;
 Note to validate the reply itself. If ```server``` or ```channel``` pertain to invalid keys, the reply will be ```false```.
 Also worth noting is that requested fields which do not match to a property of the user will not be in the fields sub-object.
 
-###leaderboarder(\<server\>,  \<user\>, \<channel\>, \<field\>, \<places\>, \<reverse\>)
+###leaderboarder(\<server\>,  \<user\> | null, \<channel\>, \<field\>, \<places\>, \<reverse\>)
 Search and sort through the data structure for the purpose of building a "leaderboard" string detailing the top or bottom scorers for a given statistic.
 The type of leaderboard is chosen via the the combination of ```user``` and ```channel``` parameters and the actual statistic to sort is selected by ```field```.
 <br />Currently the leaderboarder supports the following leaderboards (each sorts descending unless otherwise specified with ```reverse```);
@@ -170,6 +170,42 @@ A successful leaderboarder reply returns the format;
 }
 ```
 Note that you should also validate the reply itself. If ```server```, ```channel``` or ```user``` pertain to invalid keys, the reply will be ```false```.
+
+###frequencher(\<server\>, \<user\> | null, \<channel\>, \<field\>)
+Perform an analysis on the frequency array for a particular user in a channel, or a channel itself.
+Currently the frequencher supports the following options to analyze frequency array objects;
+
+* Channel frequenching (Channel parameter only, user parameter ```null```)[C]
+    * active: Identify the channel's busiest day-hour interval
+* Channel-user frequenching (Channel and user parameters both defined)[CU]
+    * active: Identify the busiest day-hour interval for a particular user in a given channel
+
+A successful reply will be of the form;
+```
+{
+  "field":    Container for data returned from the particular function applied to the array.
+              Note that field.name is the only property (as below) that can be expected as each
+              frequency analysis function will return different properties.
+              Be aware that on this occasion "field" does not refer to the name of the
+              chosen function or any other type of reference, it is merely the string 'field'.
+  {
+    "name":   The name of the function that was applied, usually this will equal field.
+
+    "day":    [active(C/CU)] Day of the week for which the array is most active.
+              Note this is the actual name of the day, ie. "Sunday", not 0.
+    "start":  [active(C/CU)] The start of the most active hour interval on that day.
+              Formatted on a 24 hour clock, midnight is "00".
+    "end":    [active(C/CU)] The end of the most active hour interval.
+              Always start+1 except when start==23 at which point this is "00".
+
+  }
+  "init":     The timestamp object for when the first record of this statistic was recorded.
+              Typically you will want to use init (which calls toString) or init.full().
+  "tz":       Timezone of timestamp to provide context to data that involves hours.
+}
+```
+You should validate the reply itself. If ```server```, ```channel``` or ```user``` pertain to invalid keys, the reply will be ```false```.
+If the API fails to apply the chosen field to the frequency array, the reply will be ```false```.
 
 ###isActive({\<server\>, \<user\> | \<channel\> | \<user\> \<channel\>, [inLast=10]})
 Return a boolean for whether a message from a [user in any channel | channel itself | user in a specific channel] was recorded in inLast minutes.
