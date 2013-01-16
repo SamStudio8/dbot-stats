@@ -227,7 +227,7 @@ var api = function(dbot) {
                     .pairs()
                     .sortBy(function(item) { 
                         var reqobj = {"server": server, "user": item[0], "channel": channel};
-                        return item[1][user_leaderboards[field]].get(reqobj);
+                        return item[1][user_leaderboards[field]].getRaw(reqobj);
                     })
                     .reverse()
                     .first(places)
