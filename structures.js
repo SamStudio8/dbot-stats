@@ -57,7 +57,7 @@ var fieldFactory = function(key, toField){
     var get;
     if(!toField.get){
         get = function(getreq){
-            return this.format(this.data);
+            return this.format(this.getRaw(getreq));
         };
     }
     else{
@@ -118,16 +118,12 @@ var fieldFactoryOutlet = function(request, api){
                 return data.numberFormat(2)+"%";
             },
             "getRaw": function(getreq){
-                if(!getreq) return;
+                if(!getreq) return -1;
                 if(!getreq.server || !getreq.user || !getreq.channel) return -1;
                 var user_lines = api.getUserStats(getreq.server, getreq.user, getreq.channel, ["lines"]);
                 var chan_lines = api.getChanStats(getreq.server, getreq.channel, ["lines"]);
                 if(!user_lines || !chan_lines) return -1;
                 return (user_lines.fields.lines.raw / chan_lines.fields.lines.raw)*100;
-            },
-            "get": function(getreq){
-                if(!getreq) return;
-                return this.format(this.getRaw(getreq));
             },
         },
         "wpl": {
@@ -135,16 +131,12 @@ var fieldFactoryOutlet = function(request, api){
                 return data.numberFormat(2)+" wpl";
             },
             "getRaw": function(getreq){
-                if(!getreq) return;
+                if(!getreq) return -1;
                 if(!getreq.server || !getreq.user || !getreq.channel) return -1;
                 var user_words = api.getUserStats(getreq.server, getreq.user, getreq.channel, ["words"]);
                 var user_lines = api.getUserStats(getreq.server, getreq.user, getreq.channel, ["lines"]);
                 if(!user_words || !user_lines) return -1;
                 return (user_words.fields.words.raw / user_lines.fields.lines.raw);
-            },
-            "get": function(getreq){
-                if(!getreq) return;
-                return this.format(this.getRaw(getreq));
             },
         },
         "freq": {
@@ -159,7 +151,7 @@ var fieldFactoryOutlet = function(request, api){
                 return freq;
             },
             "get": function(getreq){
-                if(!_.has(addreq, "day") || !_.has(addreq, "hour")) return;
+                if(!_.has(getreq, "day") || !_.has(getreq, "hour")) return;
                 if(addreq.day < 0 || addreq.day > 6 || addreq.hour < 0 || addreq.hour > 23) return;
                 return this.format(this.data[getreq.day][getreq.hour]);
             },
@@ -181,9 +173,10 @@ var fieldFactoryOutlet = function(request, api){
                 }
                 this.data[addreq.mentioned] += addreq.inc;
             },
-            "get": function(getreq){
+            "getRaw": function(getreq){
+                if(!getreq) return -1;
                 if(!_.has(getreq, "mentioned") || !_.has(this.data, getreq.mentioned)) return -1;
-                return this.format(this.data[getreq.mentioned]);
+                return this.data[getreq.mentioned];
             },
         },
         "init": {
@@ -206,7 +199,7 @@ var fieldFactoryOutlet = function(request, api){
                 return data.numberFormat(2)+" wpl";
             },
             "getRaw": function(getreq){
-                if(!getreq) return;
+                if(!getreq) return -1;
                 if(!getreq.server || !getreq.channel) return -1;
                 var chan_words = api.getChanStats(getreq.server, getreq.channel, ["words"]);
                 var chan_lines = api.getChanStats(getreq.server, getreq.channel, ["lines"]);
@@ -230,7 +223,7 @@ var fieldFactoryOutlet = function(request, api){
                 return freq;
             },
             "get": function(getreq){
-                if(!_.has(addreq, "day") || !_.has(addreq, "hour")) return;
+                if(!_.has(getreq, "day") || !_.has(getreq, "hour")) return;
                 if(addreq.day < 0 || addreq.day > 6 || addreq.hour < 0 || addreq.hour > 23) return;
                 return this.format(this.data[getreq.day][getreq.hour]);
             },

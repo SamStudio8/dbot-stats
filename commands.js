@@ -88,82 +88,39 @@ var commands = function(dbot){
             }
         },
 
-          //TODO(samstudio8) Sat 13 Jan
-          // Removed access to ~active until I can decide how the API will support
-          // calls to it as we head toward to end of Issue #43
- //       '~active': function(event){
- //           if(!userStats.hasOwnProperty(event.server)) return;
- //
- //           if(event.params[1]){
- //               var input = dbot.api.users.resolveUser(event.server, event.params[1], true);
- //               if(userStats[event.server].hasOwnProperty(input) && userStats[event.server][input].hasOwnProperty(event.channel)){
- //                   var max = -1;
- //                   var max_day = -1;
- //                   var max_hour = -1;
- //                   for(var i=0; i<=6; i++) {
- //                       for(var j=0; j<=23; j++){
- //                           if(userStats[event.server][input][event.channel]["freq"][i][j] > max){
- //                               max = userStats[event.server][input][event.channel]["freq"][i][j];
- //                               max_day = i;
- //                               max_hour = j;
- //                           }
- //                       }
- //                   }
- //                   var start = max_hour;
- //                   var end = max_hour + 1;
- //                   if(start == 23){
- //                       end = "00";
- //                   }
- //
- //                   if(max > 0){
- //                       event.reply(dbot.t("hours_active", {
- //                           "name": input,
- //                           "day": days[max_day],
- //                           "start_hour": start,
- //                           "end_hour": end,
- //                           "start": formatDate(userStats[event.server][input][event.channel]["startstamp"]),
- //                           "tz": getTimezone(userStats[event.server][input][event.channel]["startstamp"])}
- //                       ));
- //                   }
- //               }
- //               else{
- //                   event.reply(dbot.t("no_data", {
- //                       "user": input}
- //                   ));
- //               }
- //           }
- //           else{
- //               if(!chanStats.hasOwnProperty(event.server) || !chanStats[event.server].hasOwnProperty(event.channel)) return;
- //               var max = -1;
- //               var max_day = -1;
- //               var max_hour = -1;
- //               for(var i=0; i<=6; i++) {
- //                   for(var j=0; j<=23; j++){
- //                       if(chanStats[event.server][event.channel]["freq"][i][j] > max){
- //                           max = chanStats[event.server][event.channel]["freq"][i][j];
- //                           max_day = i;
- //                           max_hour = j;
- //                       }
- //                   }
- //               }
- //               var start = max_hour;
- //               var end = max_hour + 1;
- //               if(start == 23){
- //                   end = "00";
- //               }
- //
- //               if(max > 0){
- //                   event.reply(dbot.t("hours_active", {
- //                       "name": event.channel,
- //                       "day": days[max_day],
- //                       "start_hour": start,
- //                       "end_hour": end,
- //                       "start": formatDate(chanStats[event.server][event.channel]["startstamp"]),
- //                       "tz": getTimezone(chanStats[event.server][event.channel]["startstamp"])}
- //                   ));
- //               }
- //           }
- //       },
+        '~active': function(event){
+            if(event.params[1]){
+                var result = this.api.frequencher(event.server, event.params[1], event.channel, "active");
+                if(result){
+                    event.reply(dbot.t("hours_active", {
+                        "name": event.params[1],
+                        "day": result.field.day,
+                        "start_hour": result.field.start,
+                        "end_hour": result.field.end,
+                        "start": result.init,
+                        "tz": result.tz
+                    }));
+                }
+                else{
+                    event.reply(dbot.t("no_data", {
+                        "user": event.params[1].toLowerCase()
+                    }));
+                }
+            }
+            else{
+                var result = this.api.frequencher(event.server, null, event.channel, "active");
+                if(result){
+                    event.reply(dbot.t("hours_active", {
+                        "name": event.channel,
+                        "day": result.field.day,
+                        "start_hour": result.field.start,
+                        "end_hour": result.field.end,
+                        "start": result.init,
+                        "tz": result.tz
+                    }));
+                }
+            }
+        },
 
         '~loudest': function(event){
             if(!event.params[1]){

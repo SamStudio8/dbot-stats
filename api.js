@@ -167,6 +167,7 @@ var api = function(dbot) {
                 "in_mentions": {
                     "field": "out_mentions",
                     "search": true,
+                    "search_field": "mentioned",
                     "match": true
                 }
             };
@@ -178,15 +179,20 @@ var api = function(dbot) {
                         || !_.has(userStats, primary)
                         || !_.has(userStats[primary], channel)) return false;
                 
-                var reqobj = {"server": server, "user": primary, "channel": channel};
-
                 var sorted;
                 if(user_chan_boards[field].search == true){
                     if(user_chan_boards[field].match == true){
                         //TODO(samstudio8) Update to underscore.js when you are
                         //less angry at it...
                         sorted = Object.prototype.sort(dbot.api.stats.__getChanUsers(server, channel), function(key, obj) {
-                                return obj[key][user_chan_boards[field].field].getRaw({"mentioned": primary});
+                                //TODO(samstudio8) 
+                                // Assuming search is for primary...
+                                // Although at the moment this is pretty much 
+                                // the only thing that requires searching for.
+                                var reqobj = {"server": server, "user": primary, "channel": channel};
+                                reqobj[user_chan_boards[field].search_field] = primary;
+                                console.log(Object.keys(reqobj));
+                                return obj[key][user_chan_boards[field].field].getRaw(reqobj);
                             }
                         );
                     }
@@ -250,6 +256,104 @@ var api = function(dbot) {
                 "places": sorted.length,
                 "init": init,
             };
+        },
+
+        /**
+         * Handle the various operations that can be performed on user and
+         * channel frequency arrays.
+         */
+        'frequencher': function(server, nick, channel, func){
+            if(!_.has(dbot.db.userStats, server) 
+                    || !_.has(dbot.db.chanStats, server)) return false;
+
+            var userStats = dbot.db.userStats[server];
+            var chanStats = dbot.db.chanStats[server];
+
+            // Define a set of functions to be applied to frequency arrays in
+            // order to return the desired field.
+            var freq_funcs = {
+
+                // Return the most active day-hour interval for a given array.
+                "active": function(freq){
+                    var days = {'1':"Monday",
+                                '2':"Tueday",
+                                '3':"Wednesday",
+                                '4':"Thursday",
+                                '5':"Friday",
+                                '6':"Saturday",
+                                '0':"Sunday"};
+
+                    var max = -1;
+                    var max_day = -1;
+                    var max_hour = -1;
+
+                    for(var i=0; i<=6; i++) {
+                        for(var j=0; j<=23; j++){
+                            if(freq[i][j] > max){
+                                max = freq[i][j];
+                                max_day = i;
+                                max_hour = j;
+                            }
+                        }
+                    }
+
+                    var start = max_hour;
+                    var end = max_hour + 1;
+                    if(start == 23) end = "00";
+
+                    if(max == -1 || max_day == -1 || max_hour == -1) return false;
+                    return {
+                        "name": "active",
+                        "day": days[max_day],
+                        "start": start,
+                        "end": end
+                    }
+                }
+            };
+            if(!_.has(freq_funcs, func)) return false;
+
+            // Auxillary method to pluck a timezone from a Date string
+            var getTimezone = function(d){
+                var date = new Date(d);
+                var d = date.toString().match("^(\\w{3} \\w{3} \\d{1,2} \\d{4}) ((\\d{2}:){2}\\d{2}).*\\((.*)\\)$");
+                return d[4];
+            };
+
+            var result;
+            var freq;
+            var init;
+
+            if(nick && channel){
+                var primary = dbot.api.users.resolveUser(server, nick, true).toLowerCase();
+                var reqobj = {"server": server, "user": primary, "channel": channel};
+
+                if(!_.has(userStats, primary)
+                        || !_.has(userStats[primary], channel)
+                        || !_.has(chanStats, channel)) return false;
+
+                freq = userStats[primary][channel].freq.getRaw(reqobj);
+                init = userStats[primary][channel].freq.time.init;
+            }
+            else if(nick){
+                // Currently do not support server-wide statistics.
+                return false;
+            }
+            else if(channel){
+                var reqobj = {"server": server, "channel": channel};
+                if(!_.has(chanStats, channel)) return false;
+
+                freq = chanStats[channel].freq.getRaw(reqobj);
+                init = chanStats[channel].freq.time.init;
+            }
+            else{ return false; }
+
+            result = freq_funcs[func](freq);
+            if(!result) return false;
+            return {
+                "field": result,
+                "init": init,
+                "tz": getTimezone(init.stamp)
+            }
         },
 
         /**

@@ -74,15 +74,6 @@ var stats = function(dbot){
     }.bind(this);
     this.on = 'PRIVMSG';
 
-    var getTimezone = function(d){
-        var date = new Date(d);
-        var d = date.toString().match("^(\\w{3} \\w{3} \\d{1,2} \\d{4}) ((\\d{2}:){2}\\d{2}).*\\((.*)\\)$");
-        return d[4];
-    };
-
-    //TODO(samstudio8): There must be a less terrible way to resolve the weekday
-    var days = {'1':"Monday", '2':"Tueday", '3':"Wednesday", '4':"Thursday", '5':"Friday", '6':"Saturday", '0':"Sunday"};
-
     this.onLoad = function(){
         var api = this.api;
 
