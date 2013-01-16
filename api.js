@@ -115,16 +115,16 @@ var api = function(dbot) {
         'leaderboarder': function(server, user, channel, field, places, reverse){
             //TODO(samstudio8) Implement reverse parameter
             
-            if(!server || !field) return null;
+            if(!server || !field) return false;
             if(!_.has(dbot.db.userStats, server) 
-                    || !_.has(dbot.db.chanStats, server)) return null;
+                    || !_.has(dbot.db.chanStats, server)) return false;
 
             var userStats = dbot.db.userStats[server];
             var chanStats = dbot.db.chanStats[server];
 
-            // Resolve leaderboading methods to the user field that should be 
+            // Resolve leaderboading methods to the user field that should 
             // first be sorted to construct a leaderboard.
-            var user_leaderboards = {
+            var chan_leaderboards = {
                 "loudest": "lincent",
                 "verbose": "wpl",
                 "popular": "in_mentions",
@@ -176,7 +176,7 @@ var api = function(dbot) {
                 primary = primary.toLowerCase();
                 if(!_.has(chanStats, channel)
                         || !_.has(userStats, primary)
-                        || !_.has(userStats[primary], channel)) return null;
+                        || !_.has(userStats[primary], channel)) return false;
                 
                 var reqobj = {"server": server, "user": primary, "channel": channel};
 
@@ -192,7 +192,7 @@ var api = function(dbot) {
                     }
                     else{
                         // Currently no commands require this functionality
-                        return null;
+                        return false;
                     }
                 }
                 else{
@@ -218,16 +218,16 @@ var api = function(dbot) {
             }
             else if(user){
                 //TODO(samstudio8)[FUTURE] Summary server stats across all channels?
-                return null;
+                return false;
             }
             else if(channel){
-                if(!_.has(chanStats, channel)) return null;
+                if(!_.has(chanStats, channel)) return false;
                 var users = dbot.api.stats.__getChanUsers(server, channel);
                 var sorted = _.chain(users)
                     .pairs()
                     .sortBy(function(item) { 
                         var reqobj = {"server": server, "user": item[0], "channel": channel};
-                        return item[1][user_leaderboards[field]].getRaw(reqobj);
+                        return item[1][chan_leaderboards[field]].getRaw(reqobj);
                     })
                     .reverse()
                     .first(places)
@@ -236,14 +236,14 @@ var api = function(dbot) {
                 var leaderboard_str = "";
                 _.each(sorted, function(item){
                     var reqobj = {"server": server, "user": item[0], "channel": channel};
-                    leaderboard_str += item[0] + " (" + item[1][user_leaderboards[field]].get(reqobj) + "), ";
+                    leaderboard_str += item[0] + " (" + item[1][chan_leaderboards[field]].get(reqobj) + "), ";
                 });
                 leaderboard_str = leaderboard_str.slice(0, -2);
 
                 //Euch
                 var init = chanStats[channel].init;
             }
-            else{ return null; }
+            else{ return false; }
 
             return {
                 "leaderboard": leaderboard_str,
@@ -258,13 +258,13 @@ var api = function(dbot) {
          */
         'getChanStats': function(server, channel, fields){
             if(!_.has(dbot.db.userStats, server) 
-                    || !_.has(dbot.db.chanStats, server)) return null;
+                    || !_.has(dbot.db.chanStats, server)) return false;
 
             var userStats = dbot.db.userStats[server];
             var chanStats = dbot.db.chanStats[server];
             var reqobj = {"server": server, "channel": channel};
 
-            if(!_.has(chanStats, channel)) return null;
+            if(!_.has(chanStats, channel)) return false;
 
             var fieldResults = {};
             _.each(fields, function(field){
@@ -276,9 +276,6 @@ var api = function(dbot) {
                     fieldResults[field]["raw"] = chanStats[channel][field].getRaw(reqobj);
                     fieldResults[field]["init"] = chanStats[channel][field].time.init;
                     fieldResults[field]["last"] =  chanStats[channel][field].time.last;
-                }
-                else{
-                    fieldResults[field]["code"] = -1;
                 }
             });
 
@@ -294,9 +291,9 @@ var api = function(dbot) {
          */
         'getUserStats': function(server, nick, channel, fields){
             //TODO(samstudio8) If no fields, return all keys
-            if(!server || !nick || !channel) return null;
+            if(!server || !nick || !channel) return false;
             if(!_.has(dbot.db.userStats, server) 
-                    || !_.has(dbot.db.chanStats, server)) return null;
+                    || !_.has(dbot.db.chanStats, server)) return false;
 
             var userStats = dbot.db.userStats[server];
             var chanStats = dbot.db.chanStats[server];
@@ -307,7 +304,7 @@ var api = function(dbot) {
 
             if(!_.has(userStats, primary)
                     || !_.has(userStats[primary], channel)
-                    || !_.has(chanStats, channel)) return null;
+                    || !_.has(chanStats, channel)) return false;
 
             var display = primary;
             if(primary != nick.toLowerCase()){
@@ -325,9 +322,6 @@ var api = function(dbot) {
                     fieldResults[field]["init"] = userStats[primary][channel][field].time.init;
                     fieldResults[field]["last"] =  userStats[primary][channel][field].time.last;
                 }
-                else{
-                    fieldResults[field]["code"] = -1;
-                }
             });
 
             var reply = {
@@ -340,9 +334,9 @@ var api = function(dbot) {
 
         'getChanUsersStats': function(server, channel, fields){
             //TODO(samstudio8) If no fields, return all keys
-            if(!server || !channel) return null;
+            if(!server || !channel) return false;
             if(!_.has(dbot.db.userStats, server) 
-                    || !_.has(dbot.db.chanStats, server)) return null;
+                    || !_.has(dbot.db.chanStats, server)) return false;
 
             var reply = {
                 "users": {}

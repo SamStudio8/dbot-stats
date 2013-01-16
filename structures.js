@@ -262,7 +262,7 @@ var fieldFactoryOutlet = function(request, api){
         });
 
     }
-    else{ return null; }
+    else{ return {}; }
     return fieldFactoryProduct;
 };
 

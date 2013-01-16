@@ -46,21 +46,19 @@ Display the timestamp of the last recorded message from a particular user.<br />
 Without the optional user parameter the bot will display the timestamp of the last recorded message in the current channel.
 
 ##API
-###getUserStats(\<server\>, \<user\>, \<channel\>, [field(s)])
-Query the API for statistics pertaining to a user on a particular channel on a server.<br />
+###getUserStats(\<server\>, \<user\>, \<channel\>, \<field(s)\>)
+Query the API for stats ```fields``` pertaining to a user on a particular channel on a server.<br />
 A successful reply will follow the following format;
 ```
 {
-  "code":       Response code, currently not used. 0 is good.
-                Non zero is not good and means you will not be reading your API reply today.
-  "display":    Either the alias and primary nick in the form 'alias (primary)' or simply the primary nick.
+  "display":    Either the alias and primary nick in the form 'alias (primary)' or if the name
+                is not an alias, simply the primary nick itself.
   "primary":    The primary nick of the profile.
-  "fields":     An object containing a response for each requested field.
+  "fields":     An object containing a response for each valid field of the request.
   {
-    "name":     The name of the field requested is used as the key for each field response object.
+    "<field>":  The name of the field requested is used as the key for each field response object.
     {
-      "code":   Field response code, currently not used. 0 is good.
-                A non-zero value will indicate failure and the properties below may be unavailable.
+      "name":   The name of the field requested.
       "data":   Formatted data, the result of this.format(this.data) on the data field in question.
                 For example, for wpl this result would be formatted to 2dp and appended with ' wpl'.
       "raw":    Raw data, the value of the data field before it was formatted.
@@ -75,22 +73,20 @@ A successful reply will follow the following format;
 }
 ```
 It is important to note that ```primary``` will be returned in lowercase due to the way in which stats handles usernames.
-Note that you should also validate the reply itself. If ```server```, ```channel``` or ```user``` pertain to invalid keys, the reply will be ```null```.
+Also worth noting is that requested fields which do not match to a property of the user will not be in the fields sub-object.
+Note that you should also validate the reply itself. If ```server```, ```channel``` or ```user``` pertain to invalid keys, the reply will be ```false```.
 
-###getChanStats(\<server\>, \<channel\>, [field(s)])
-Query the API for statistics pertaining to a particular channel on a server.<br />
+###getChanStats(\<server\>, \<channel\>, \<field(s)\>)
+Query the API for stats ```fields```  pertaining to a particular channel on a server.<br />
 A successful reply will follow the following format;
 
 ```
 {
-  "code":       Response code, currently not used. 0 is good.
-                Non zero is not good and means you will not be reading your API reply today.
-  "fields":     An object containing a response for each requested field.
+  "fields":     An object containing a response for each valid field of the request.
   {
-    "name":     The name of the field requested is used as the key for each field response object.
+    "<field>":  The name of the field requested is used as the key for each field response object.
     {
-      "code":   Field response code, currently not used. 0 is good.
-                A non-zero value will indicate failure and the properties below may be unavailable.
+      "name":   The name of the field requested.
       "data":   Formatted data, the result of this.format(this.data) on the data field in question.
                 For example, for wpl this result would be formatted to 2dp and appended with ' wpl'.
       "raw":    Raw data, the value of the data field before it was formatted.
@@ -104,30 +100,30 @@ A successful reply will follow the following format;
   }
 }
 ```
-Note you should validate the reply itself. If ```server``` or ```channel``` pertain to invalid keys, the reply will be ```null```.
+Note you should validate the reply itself. If ```server``` or ```channel``` pertain to invalid keys, the reply will be ```false```.
+Also worth noting is that requested fields which do not match to a property of the channel will not be in the fields sub-object.
 
-###getChanUsersStats(\<server\>, \<channel\>, [field(s)])
+###getChanUsersStats(\<server\>, \<channel\>, \<field(s)\>)
 Calls ```getUserStats``` for each user on the ```server``` with a key for the specified ```channel```.<br />
 These users are discovered with a call to ```__getChanUsers```.
 This function is typically used for the web interface when displaying lists of users in a channel with associated stats data.
 A successful reply will follow the following format;
 ```
 {
-  "code":           Response code, currently not used. 0 is good.
-                    Non zero is not good and means you will not be reading your API reply today.
   "users":          An object containing a response for each user with data for the selected channel.
   {
-    "name":         The primary name of the user for which the object pertains to.
-    "code":         User response code, currently not used. 0 is good.
-                    A non zero value will indicate a form of failure (user doesn't exist etc.) and should
-                    be considered a warning not to rely on the existence of the properties expected below.
+    "<user>":       The primary name of the user for which the object pertains to.
     {
-      "fields":     An object containing a response for each requested field.
+      "display":    Either the alias and primary nick in the form 'alias (primary)' or if the name
+                    is not an alias, simply the primary nick itself.
+      "primary":    The primary nick of the profile.
+      "online":     A boolean to indicate whether the user is currently in the channel.
+      "active":     A boolean to indicate whether this user has been active in the channel.
+      "fields":     An object containing a response for each valid field of the request.
       {
-        "name":     The name of the field requested is used as the key for each field response object.
+        "<field>":  The name of the field requested is used as the key for each field response object.
         {
-          "code":   Field response code, currently not used. 0 is good.
-                    A non-zero value will indicate failure and the properties below may be unavailable.
+          "name":   The name of the field requested.
           "data":   Formatted data, the result of this.format(this.data) on the data field in question.
                     For example, for wpl this result would be formatted to 2dp and appended with ' wpl'.
           "raw":    Raw data, the value of the data field before it was formatted.
@@ -143,8 +139,10 @@ A successful reply will follow the following format;
   }
 }
 ```
+Note to validate the reply itself. If ```server``` or ```channel``` pertain to invalid keys, the reply will be ```false```.
+Also worth noting is that requested fields which do not match to a property of the user will not be in the fields sub-object.
 
-###leaderboarder(\<server\>,  \<channel\> | \<user\> \<channel\>, \<field\>, \<places\>, \<reverse\>)
+###leaderboarder(\<server\>,  \<user\>, \<channel\>, \<field\>, \<places\>, \<reverse\>)
 Search and sort through the data structure for the purpose of building a "leaderboard" string detailing the top or bottom scorers for a given statistic.
 The type of leaderboard is chosen via the the combination of ```user``` and ```channel``` parameters and the actual statistic to sort is selected by ```field```.
 <br />Currently the leaderboarder supports the following leaderboards (each sorts descending unless otherwise specified with ```reverse```);
@@ -158,7 +156,7 @@ The type of leaderboard is chosen via the the combination of ```user``` and ```c
     * out_mentions: Order channel users most mentioned by ```user``` 
 
 Unsurprisingly ```places``` defines the number of positions to show on the leaderboard.
-A successful API leaderboarder reply returns the format;
+A successful leaderboarder reply returns the format;
 
 ```
 {
@@ -171,10 +169,10 @@ A successful API leaderboarder reply returns the format;
                   Typically you will want to use init (which calls toString) or init.full().
 }
 ```
-Note that you should also validate the reply itself. If ```server```, ```channel``` or ```user``` pertain to invalid keys, the reply will be ```null```.
+Note that you should also validate the reply itself. If ```server```, ```channel``` or ```user``` pertain to invalid keys, the reply will be ```false```.
 
 ###isActive({\<server\>, \<user\> | \<channel\> | \<user\> \<channel\>, [inLast=10]})
-Report whether a message from a [user in any channel | channel itself | user in a specific channel] was recorded in inLast minutes.
+Return a boolean for whether a message from a [user in any channel | channel itself | user in a specific channel] was recorded in inLast minutes.
 inLast defaults to ten minutes. Note the parameters are to be delivered within an object.
 
 ###fixStats(\<server\>, \<userAlias\>)
@@ -182,7 +180,7 @@ Resolve ```userAlias``` to its primary nick on ```server``` and rename all ```us
 
 ###__getChanUsers(\<server\>, \<channel\>)
 Return the server.user.channel objects for all users on a server who have a dbKey for a particular channel.<br />
-Note this function is regarded as an "internal" API function and could be subject to change without notice.
+Note this function is regarded as an "internal" API function and could be subject to change or removal without notice.
 
 ##Licence
 stats is distributed under the MIT license, see LICENCE for further information.
