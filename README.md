@@ -17,7 +17,6 @@ Report the percentage of the current channel's total lines a particular user is 
 Without the user parameter, the bot will reply using your own nick as the user parameter.
 
 ###~active [user] 
-**Currently Disabled**<br />
 Report the day and hour interval for which the user is most active in the current channel.<br />
 Without the user parameter, the bot will reply with the current channel's most active interval.
 
