@@ -38,17 +38,17 @@ var api = function(dbot) {
         },
 
         /**
-         * Merge the statistics keys of one user into another.
+         * Merge the statistics keys of one primary user into another.
          */
-        'mergeStats': function(server, mergeTo, mergeFrom){
+        'mergeStats': function(server, mergeToPrimary, mergeFromPrimary){
             if(!_.has(dbot.db.userStats, server)
                     || !_.has(dbot.db.chanStats, server)) return;
 
             var userStats = dbot.db.userStats[server];
             var chanStats = dbot.db.chanStats[server];
 
-            var mergeToPrimary = dbot.api.users.resolveUser(server, mergeTo, true).toLowerCase();
-            var mergeFromPrimary = dbot.api.users.resolveUser(server, mergeFrom, true).toLowerCase();
+            mergeToPrimary = mergeToPrimary.toLowerCase();
+            mergeFromPrimary = mergeFromPrimary.toLowerCase();
             if(!_.has(userStats, mergeToPrimary)
                     || !_.has(userStats, mergeFromPrimary)) return;
 
