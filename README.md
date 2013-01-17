@@ -210,8 +210,13 @@ If the API fails to apply the chosen field to the frequency array, the reply wil
 Return a boolean for whether a message from a [user in any channel | channel itself | user in a specific channel] was recorded in inLast minutes.
 inLast defaults to ten minutes. Note the parameters are to be delivered within an object.
 
-###fixStats(\<server\>, \<userAlias\>)
+###renameStats(\<server\>, \<userAlias\>)
 Resolve ```userAlias``` to its primary nick on ```server``` and rename all ```userAlias``` dbKeys in ```server``` to the resolved nick.
+
+###mergeStats(\<server\>, \<mergeTo\>, \<mergeFrom\>)
+Copy all statistics from user ```mergeFrom``` in to each appropriate field of user ```mergeTo```, incrementing where data already exists.
+This function will also update each field's timestamps to use the most recent "last" timestamp and the oldest "init" timestamp from the two users.
+Upon completion, ```mergeFrom``` will be removed from the database.
 
 ###__getChanUsers(\<server\>, \<channel\>)
 Return the server.user.channel objects for all users on a server who have a dbKey for a particular channel.<br />

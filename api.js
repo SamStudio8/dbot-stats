@@ -8,7 +8,7 @@ var api = function(dbot) {
          * nick and transfer statistics dbKeys pertaining to the alias to the
          * new primary name.
          */
-        'fixStats': function(server, alias){
+        'renameStats': function(server, alias){
             if(!_.has(dbot.db.userStats, server)
                     || !_.has(dbot.db.chanStats, server)) return;
 
@@ -28,8 +28,7 @@ var api = function(dbot) {
                 _.each(userStats, function(user, userName){
                     _.each(user, function(chan, chanName){
                         if(_.has(chan["out_mentions"], alias)){
-                            //TODO(samstudio8) Can I do chan["out_mentions"][primary] here?
-                            chan["out_mentions"][primary] = chan["out_mentions"][alias];
+                            chan.out_mentions.data[primary] = chan.out_mentions.data[alias];
                             delete chan.out_mentions.data[alias];
                         }
                     });

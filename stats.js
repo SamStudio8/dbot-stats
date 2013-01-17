@@ -123,7 +123,7 @@ var stats = function(dbot){
         dbot.save();
 
         // Add API Hooks
-        dbot.api.command.addHook('~setaliasparent', this.api.fixStats);
+        dbot.api.command.addHook('~setaliasparent', this.api.renameStats);
         dbot.api.command.addHook('~mergeusers', this.api.mergeStats);
 
     }.bind(this);
