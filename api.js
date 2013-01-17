@@ -15,7 +15,7 @@ var api = function(dbot) {
             var userStats = dbot.db.userStats[server];
             var chanStats = dbot.db.chanStats[server];
 
-            if(_.has(userStats, name)){
+            if(_.has(userStats, alias)){
                 var primary = dbot.api.users.resolveUser(server, alias, true);
                 primary = primary.toLowerCase();
                 alias = alias.trim().toLowerCase();
@@ -26,16 +26,71 @@ var api = function(dbot) {
 
                 // Rename keys in all out_mentions on this server
                 _.each(userStats, function(user, userName){
-                    _.each(userStats[userName], function(chan, chanName){
-                        if(_.has(userStats[curr_user][curr_channel]["out_mentions"], alias)){
+                    _.each(user, function(chan, chanName){
+                        if(_.has(chan["out_mentions"], alias)){
                             //TODO(samstudio8) Can I do chan["out_mentions"][primary] here?
-                            userStats[curr_user][curr_channel]["out_mentions"][primary] = userStats[curr_user][curr_channel]["out_mentions"][alias];
-                            delete userStats[curr_user][curr_channel]["out_mentions"][alias];
+                            chan["out_mentions"][primary] = chan["out_mentions"][alias];
+                            delete chan.out_mentions.data[alias];
                         }
                     });
                 });
                 dbot.save();
             }
+        },
+
+        /**
+         * Merge the statistics keys of one user into another.
+         */
+        'mergeStats': function(server, mergeTo, mergeFrom){
+            if(!_.has(dbot.db.userStats, server)
+                    || !_.has(dbot.db.chanStats, server)) return;
+
+            var userStats = dbot.db.userStats[server];
+            var chanStats = dbot.db.chanStats[server];
+
+            var mergeToPrimary = dbot.api.users.resolveUser(server, mergeTo, true).toLowerCase();
+            var mergeFromPrimary = dbot.api.users.resolveUser(server, mergeFrom, true).toLowerCase();
+            if(!_.has(userStats, mergeToPrimary)
+                    || !_.has(userStats, mergeFromPrimary)) return;
+
+            // Call merge on each of mergeTo's fields, passing the equivalent 
+            // field itself from mergeFrom
+            _.each(userStats[mergeToPrimary], function(chan, chanName){
+                _.each(chan, function(field, fieldName){
+                    if(_.has(userStats[mergeFromPrimary][chanName], fieldName)){
+                        field.merge(userStats[mergeFromPrimary][chanName][fieldName]);
+                    }
+                });
+            });
+
+            // Copy channels from mergeFrom that do not already exist in mergeTo
+            // There should be no need to check for the existence of all fields
+            // as this will have been done by the onLoad integrity check.
+            _.defaults(userStats[mergeToPrimary], userStats[mergeFromPrimary]);
+
+            // Erase mergeFrom's data from userStats
+            delete userStats[mergeFromPrimary];
+
+            // Reassign_all mentions of mergeFrom on this server to mergeTo
+            _.each(userStats, function(user, userName){
+                _.each(user, function(chan, chanName){
+                    if(_.has(chan.out_mentions.data, mergeFromPrimary)){
+                        chan.out_mentions.add({
+                            "mentioned": mergeToPrimary,
+                            "inc": chan.out_mentions.getRaw({"mentioned": mergeFromPrimary})
+                        });
+                        delete chan.out_mentions.data[mergeFromPrimary];
+                    }
+                });
+            });
+
+            // Remove any self mentions that may have resulted
+            _.each(userStats[mergeToPrimary], function(chan, chanName){
+                if(_.has(chan.out_mentions.data, mergeToPrimary)){
+                    chan.in_mentions.data -= chan.out_mentions.data[mergeToPrimary];
+                    delete chan.out_mentions.data[mergeToPrimary];
+                };
+            });
         },
 
         /**
@@ -191,7 +246,6 @@ var api = function(dbot) {
                                 // the only thing that requires searching for.
                                 var reqobj = {"server": server, "user": primary, "channel": channel};
                                 reqobj[user_chan_boards[field].search_field] = primary;
-                                console.log(Object.keys(reqobj));
                                 return obj[key][user_chan_boards[field].field].getRaw(reqobj);
                             }
                         );

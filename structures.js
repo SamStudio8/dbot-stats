@@ -64,6 +64,18 @@ var fieldFactory = function(key, toField){
         get = toField.get;
     }
 
+    // If a field defines a merge method, this will override the default
+    // behaviour of calling add on the data attribute
+    var __merge;
+    if(!toField.merge){
+        __merge = function(mergeData){
+            this.add(mergeData.data);
+        }
+    }
+    else{
+        __merge = toField.merge;
+    }
+
     // If a field was manufactured before arriving at the factory, complete 
     // its data value and output it in the state in which it arrived.
     if(toField.prefab){
@@ -85,6 +97,16 @@ var fieldFactory = function(key, toField){
             this.__add(input);
             this.time.last.stamp = Date.now();
         },
+        "merge": function(input){
+            this.__merge(input);
+            if(input.time.last.stamp > this.time.last.stamp){
+                this.time.last.stamp = input.time.last.stamp;
+            }
+            if(input.time.init.stamp < this.time.init.stamp){
+                this.time.init.stamp = input.time.init.stamp;
+            }
+        },
+        "__merge": __merge,
         "time": {
             "init": {
                 "stamp": Date.now(),
@@ -160,6 +182,13 @@ var fieldFactoryOutlet = function(request, api){
                 if(addreq.day < 0 || addreq.day > 6 || addreq.hour < 0 || addreq.hour > 23) return;
                 this.data[addreq.day][addreq.hour] += addreq.inc;
             },
+            "merge": function(merge){
+                for(var i=0; i<=6; i++){
+                    for(var j=0; j<=23; j++){
+                        this.data[i][j] += merge.data[i][j];
+                    }
+                }
+            }
         },
         "in_mentions": {},
         "out_mentions": {
@@ -174,10 +203,20 @@ var fieldFactoryOutlet = function(request, api){
                 this.data[addreq.mentioned] += addreq.inc;
             },
             "getRaw": function(getreq){
-                if(!getreq) return -1;
-                if(!_.has(getreq, "mentioned") || !_.has(this.data, getreq.mentioned)) return -1;
+                if(!getreq) return {};
+                if(!_.has(getreq, "mentioned")) return -1
+                if(!_.has(this.data, getreq.mentioned)) return 0;
                 return this.data[getreq.mentioned];
             },
+            "merge": function(merge){
+                if(!merge) return;
+                _.each(this.data, function(user, userName){
+                    if(_.has(merge.data, userName)){
+                        user += merge.data[userName];
+                    }
+                });
+                _.defaults(this.data, merge.data);
+            }
         },
         "init": {
             "prefab": true,
@@ -186,6 +225,11 @@ var fieldFactoryOutlet = function(request, api){
             },
             "toString": function(){ 
                 return new Date(this.data).toDateString();
+            },
+            "merge": function(merge){
+                if(merge.data < this.data){
+                    this.data = merge.data;
+                }
             }
         }
     };
@@ -232,6 +276,13 @@ var fieldFactoryOutlet = function(request, api){
                 if(addreq.day < 0 || addreq.day > 6 || addreq.hour < 0 || addreq.hour > 23) return;
                 this.data[addreq.day][addreq.hour] += addreq.inc;
             },
+            "merge": function(merge){
+                for(var i=0; i<=6; i++){
+                    for(var j=0; j<=23; j++){
+                        this.data[i][j] += merge.data[i][j];
+                    }
+                }
+            }
         },
         "init": {
             "prefab": true,
@@ -240,6 +291,11 @@ var fieldFactoryOutlet = function(request, api){
             },
             "toString": function(){ 
                 return new Date(this.data).toDateString();
+            },
+            "merge": function(merge){
+                if(merge.data < this.data){
+                    this.data = merge.data;
+                }
             }
         }
     };

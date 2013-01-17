@@ -75,9 +75,14 @@ var stats = function(dbot){
     this.on = 'PRIVMSG';
 
     this.onLoad = function(){
+        //TODO(samstudio8): Also delete no longer required fields
+
+        // For some reason the scope of this changes and prevents access to the
+        // API inside of the underscore loops, I think it's because I need to
+        // pass in a context, but this works anyway.
         var api = this.api;
 
-        //TODO(samstudio8): Also delete no longer required fields
+        //TODO(samstudio8) There must be a nicer way to do this...
         _.each(userStats, function(server, serverName){
             _.each(userStats[serverName], function(user, userName){
                 _.each(userStats[serverName][userName], function(chan, chanName){
@@ -119,7 +124,7 @@ var stats = function(dbot){
 
         // Add API Hooks
         dbot.api.command.addHook('~setaliasparent', this.api.fixStats);
-        dbot.api.command.addHook('~mergeusers', this.api.fixStats);
+        dbot.api.command.addHook('~mergeusers', this.api.mergeStats);
 
     }.bind(this);
     
