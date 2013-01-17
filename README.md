@@ -188,7 +188,7 @@ A successful reply will be of the form;
               Be aware that on this occasion "field" does not refer to the name of the
               chosen function or any other type of reference, it is merely the string 'field'.
   {
-    "name":   The name of the function that was applied, usually this will equal field.
+    "name":   The name of the function that was applied, usually equals the requested field.
 
     "day":    [active(C/CU)] Day of the week for which the array is most active.
               Note this is the actual name of the day, ie. "Sunday", not 0.
