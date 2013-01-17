@@ -215,6 +215,7 @@ Resolve ```userAlias``` to its primary nick on ```server``` and rename all ```us
 
 ###mergeStats(\<server\>, \<mergeTo\>, \<mergeFrom\>)
 Copy all statistics from user ```mergeFrom``` in to each appropriate field of user ```mergeTo```, incrementing where data already exists.
+Note both ```mergeTo``` and ```mergeFrom``` must be primary users and the function will not attempt to resolve them.
 This function will also update each field's timestamps to use the most recent "last" timestamp and the oldest "init" timestamp from the two users.
 Upon completion, ```mergeFrom``` will be removed from the database.
 
