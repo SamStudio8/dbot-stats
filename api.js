@@ -305,6 +305,11 @@ var api = function(dbot) {
             else{ return false; }
 
             return {
+                "request": {
+                    "server": server,
+                    "user": user,
+                    "channel": channel
+                },
                 "leaderboard": leaderboard_str,
                 "places": sorted.length,
                 "init": init,
@@ -405,7 +410,12 @@ var api = function(dbot) {
             return {
                 "field": result,
                 "init": init,
-                "tz": getTimezone(init.stamp)
+                "tz": getTimezone(init.stamp),
+                "request": {
+                    "server": server,
+                    "user": nick,
+                    "channel": channel
+                }
             }
         },
 
@@ -437,6 +447,10 @@ var api = function(dbot) {
             });
 
             var reply = {
+                "request": {
+                    "server": server,
+                    "channel": channel
+                },
                 "fields": fieldResults,
             };
             return reply;
@@ -485,6 +499,11 @@ var api = function(dbot) {
                 "display": display,
                 "primary": primary,
                 "fields": fieldResults,
+                "request": {
+                    "server": server,
+                    "user": nick,
+                    "channel": channel
+                }
             };
             return reply;
         },
@@ -496,7 +515,11 @@ var api = function(dbot) {
                     || !_.has(dbot.db.chanStats, server)) return false;
 
             var reply = {
-                "users": {}
+                "users": {},
+                "request": {
+                    "server": server,
+                    "channel": channel
+                }
             };
 
             var users = dbot.api.stats.__getChanUsers(server, channel);

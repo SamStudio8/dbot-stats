@@ -8,7 +8,7 @@ var commands = function(dbot){
                 if(result){
                     event.reply(dbot.t("user_lines", {
                         "user": result.primary,
-                        "chan": event.channel,
+                        "chan": result.request.channel,
                         "lines": result.fields.lines.data,
                         "start": result.fields.lines.init
                     }));
@@ -23,7 +23,7 @@ var commands = function(dbot){
                 var result = this.api.getChanStats(event.server, event.channel, ["lines"]);
                 if(result){
                     event.reply(dbot.t("chan_lines", {
-                        "chan": event.channel,
+                        "chan": result.request.channel,
                         "lines": result.fields.lines.data,
                         "start": result.fields.lines.init
                     }));
@@ -37,7 +37,7 @@ var commands = function(dbot){
                 if(result){
                     event.reply(dbot.t("user_words", {
                         "user": result.primary,
-                        "chan": event.channel,
+                        "chan": result.request.channel,
                         "words": result.fields.words.data,
                         "avg": result.fields.wpl.data,
                         "start": result.fields.words.init
@@ -53,7 +53,7 @@ var commands = function(dbot){
                 var result = this.api.getChanStats(event.server, event.channel, ["words", "wpl"]);
                 if(result){
                     event.reply(dbot.t("chan_words", {
-                        "chan": event.channel,
+                        "chan": result.request.channel,
                         "words": result.fields.words.data,
                         "avg": result.fields.wpl.data,
                         "start": result.fields.words.init
@@ -68,7 +68,7 @@ var commands = function(dbot){
                 if(result){
                     event.reply(dbot.t("lines_percent", {
                         "user": result.primary,
-                        "chan": event.channel,
+                        "chan": result.request.channel,
                         "percent": result.fields.lincent.data,
                         "lines": result.fields.lines.data,
                         "start": result.fields.lines.init
@@ -93,7 +93,7 @@ var commands = function(dbot){
                 var result = this.api.frequencher(event.server, event.params[1], event.channel, "active");
                 if(result){
                     event.reply(dbot.t("hours_active", {
-                        "name": event.params[1],
+                        "name": result.request.user.toLowerCase(),
                         "day": result.field.day,
                         "start_hour": result.field.start,
                         "end_hour": result.field.end,
@@ -111,7 +111,7 @@ var commands = function(dbot){
                 var result = this.api.frequencher(event.server, null, event.channel, "active");
                 if(result){
                     event.reply(dbot.t("hours_active", {
-                        "name": event.channel,
+                        "name": result.request.channel,
                         "day": result.field.day,
                         "start_hour": result.field.start,
                         "end_hour": result.field.end,
@@ -127,7 +127,7 @@ var commands = function(dbot){
                 var result = this.api.leaderboarder(event.server, null, event.channel, "loudest", 5, false);
                 if(result){
                     event.reply(dbot.t("loudest", {
-                        "chan": event.channel,
+                        "chan": result.request.channel,
                         "start": result.init,
                         "list": result.leaderboard
                     }));
@@ -146,7 +146,7 @@ var commands = function(dbot){
                 var result = this.api.leaderboarder(event.server, null, event.channel, "verbose", 5, false);
                 if(result){
                     event.reply(dbot.t("verbose", {
-                        "chan": event.channel,
+                        "chan": result.request.channel,
                         "start": result.init,
                         "list": result.leaderboard
                     }));
@@ -165,7 +165,7 @@ var commands = function(dbot){
                 var result = this.api.leaderboarder(event.server, null, event.channel, "popular", 5, false);
                 if(result){
                     event.reply(dbot.t("popular", {
-                        "chan": event.channel,
+                        "chan": result.request.channel,
                         "start": result.init,
                         "list": result.leaderboard
                     }));
@@ -185,8 +185,8 @@ var commands = function(dbot){
                 if(result){
                     if(result.places > 0){
                         event.reply(dbot.t("in_mentions", {
-                            "user": event.params[1],
-                            "chan": event.channel,
+                            "user": result.request.user.toLowerCase(),
+                            "chan": result.request.channel,
                             "start": result.init,
                             "list": result.leaderboard
                         }));
@@ -217,8 +217,8 @@ var commands = function(dbot){
                 if(result){
                     if(result.places > 0){
                         event.reply(dbot.t("out_mentions", {
-                            "user": event.params[1],
-                            "chan": event.channel,
+                            "user": result.request.user.toLowerCase(),
+                            "chan": result.request.channel,
                             "start": result.init,
                             "list": result.leaderboard
                         }));
@@ -249,7 +249,7 @@ var commands = function(dbot){
                 if(result){
                     event.reply(dbot.t("user_last", {
                         "user": result.primary,
-                        "chan": event.channel,
+                        "chan": result.request.channel,
                         "last": result.fields.lines.last.full()
                     }));
                 }
@@ -263,7 +263,7 @@ var commands = function(dbot){
                 var result = this.api.getChanStats(event.server, event.channel, ["lines"]);
                 if(result){
                     event.reply(dbot.t("chan_last", {
-                        "chan": event.channel,
+                        "chan": result.request.channel,
                         "last": result.fields.lines.last.full()
                     }));
                 }

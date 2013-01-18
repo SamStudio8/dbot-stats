@@ -69,6 +69,12 @@ A successful reply will follow the following format;
                 Typically you will want to use init (which calls toString) or init.full().
     }
   }
+  "request":    An object containing some of the request parameters.
+  {
+    "server":   The server from the request.
+    "user":     The username from the request (not lowercased or resolved).
+    "channel":  The channel from the request.
+  }
 }
 ```
 It is important to note that ```primary``` will be returned in lowercase due to the way in which stats handles usernames.
@@ -96,6 +102,11 @@ A successful reply will follow the following format;
       "last":   The timestamp object for when this statistic was last updated by the listener.
                 Typically you will want to use init (which calls toString) or init.full().
     }
+  }
+  "request":    An object containing some of the request parameters.
+  {
+    "server":   The server from the request.
+    "channel":  The channel from the request.
   }
 }
 ```
@@ -136,6 +147,11 @@ A successful reply will follow the following format;
       }
     }
   }
+  "request":        An object containing some of the request parameters.
+  {
+    "server":       The server from the request.
+    "channel":      The channel from the request.
+  }
 }
 ```
 Note to validate the reply itself. If ```server``` or ```channel``` pertain to invalid keys, the reply will be ```false```.
@@ -162,10 +178,16 @@ A successful leaderboarder reply returns the format;
   "leaderboard":  The leaderboard as a string, of the form;
                   "user1 (value1), user2 (value2), ..., usern (valuen)"
   "places":       The number of positions in the return leaderboard, this can sometimes be less than the 
-                  ```places``` parameter due to insufficient data. You should ensure this is larger than
+                  places parameter due to insufficient data. You should ensure this is larger than
                   zero when validating the reply.
   "init":         The timestamp object for when the first record of this statistic was recorded.
                   Typically you will want to use init (which calls toString) or init.full().
+  "request":      An object containing some of the request parameters.
+  {
+    "server":     The server from the request.
+    "user":       The username from the request (not lowercased or resolved).
+    "channel":    The channel from the request.
+  }
 }
 ```
 Note that you should also validate the reply itself. If ```server```, ```channel``` or ```user``` pertain to invalid keys, the reply will be ```false```.
@@ -182,25 +204,31 @@ Currently the frequencher supports the following options to analyze frequency ar
 A successful reply will be of the form;
 ```
 {
-  "field":    Container for data returned from the particular function applied to the array.
-              Note that field.name is the only property (as below) that can be expected as each
-              frequency analysis function will return different properties.
-              Be aware that on this occasion "field" does not refer to the name of the
-              chosen function or any other type of reference, it is merely the string 'field'.
+  "field":      Container for data returned from the particular function applied to the array.
+                Note that field.name is the only property (as below) that can be expected as each
+                frequency analysis function will return different properties.
+                Be aware that on this occasion "field" does not refer to the name of the
+                chosen function or any other type of reference, it is merely the string 'field'.
   {
-    "name":   The name of the function that was applied, usually equals the requested field.
+    "name":     The name of the function that was applied, usually equals the requested field.
 
-    "day":    [active(C/CU)] Day of the week for which the array is most active.
-              Note this is the actual name of the day, ie. "Sunday", not 0.
-    "start":  [active(C/CU)] The start of the most active hour interval on that day.
-              Formatted on a 24 hour clock, midnight is "00".
-    "end":    [active(C/CU)] The end of the most active hour interval.
-              Always start+1 except when start==23 at which point this is "00".
+    "day":      [active(C/CU)] Day of the week for which the array is most active.
+                Note this is the actual name of the day, ie. "Sunday", not 0.
+    "start":    [active(C/CU)] The start of the most active hour interval on that day.
+                Formatted on a 24 hour clock, midnight is "00".
+    "end":      [active(C/CU)] The end of the most active hour interval.
+                Always start+1 except when start==23 at which point this is "00".
 
   }
-  "init":     The timestamp object for when the first record of this statistic was recorded.
-              Typically you will want to use init (which calls toString) or init.full().
-  "tz":       Timezone of timestamp to provide context to data that involves hours.
+  "init":       The timestamp object for when the first record of this statistic was recorded.
+                Typically you will want to use init (which calls toString) or init.full().
+  "tz":         Timezone of timestamp to provide context to data that involves hours.
+  "request":    An object containing some of the request parameters.
+  {
+    "server":   The server from the request.
+    "user":     The username from the request (not lowercased or resolved).
+    "channel":  The channel from the request.
+  }
 }
 ```
 You should validate the reply itself. If ```server```, ```channel``` or ```user``` pertain to invalid keys, the reply will be ```false```.
