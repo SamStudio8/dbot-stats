@@ -241,9 +241,8 @@ inLast defaults to ten minutes. Note the parameters are to be delivered within a
 ###renameStats(\<server\>, \<userAlias\>)
 Resolve ```userAlias``` to its primary nick on ```server``` and rename all ```userAlias``` dbKeys in ```server``` to the resolved nick.
 
-###mergeStats(\<server\>, \<mergeTo\>, \<mergeFrom\>)
-Copy all statistics from user ```mergeFrom``` in to each appropriate field of user ```mergeTo```, incrementing where data already exists.
-Note both ```mergeTo``` and ```mergeFrom``` must be primary users and the function will not attempt to resolve them.
+###mergeStats(\<server\>, \<mergeFrom\>)
+After demoting ```mergeFrom``` from a primary user to a secondary alias, call mergeStats to resolve ```mergeFrom``` to its primary nick on ```server``` and copy all statistics to each appropriate field of the resolved primary, incrementing fields where data already exists.
 This function will also update each field's timestamps to use the most recent "last" timestamp and the oldest "init" timestamp from the two users.
 Upon completion, ```mergeFrom``` will be removed from the database.
 

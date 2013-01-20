@@ -38,17 +38,19 @@ var api = function(dbot) {
         },
 
         /**
-         * Merge the statistics keys of one primary user into another.
+         * Given a server and a primary username which has been convered to a
+         * secondary alias, resolve the alias to its primary and merge all
+         * the statistics keys of the secondary user into its new primary.
          */
-        'mergeStats': function(server, mergeToPrimary, mergeFromPrimary){
+        'mergeStats': function(server, mergeFromPrimary){
             if(!_.has(dbot.db.userStats, server)
                     || !_.has(dbot.db.chanStats, server)) return;
 
             var userStats = dbot.db.userStats[server];
             var chanStats = dbot.db.chanStats[server];
 
-            mergeToPrimary = mergeToPrimary.toLowerCase();
             mergeFromPrimary = mergeFromPrimary.toLowerCase();
+            var mergeToPrimary = dbot.api.users.resolveUser(server, mergeFromPrimary, true).toLowerCase();
             if(!_.has(userStats, mergeToPrimary)
                     || !_.has(userStats, mergeFromPrimary)) return;
 
