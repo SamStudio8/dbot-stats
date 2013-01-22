@@ -510,6 +510,44 @@ var api = function(dbot) {
             return reply;
         },
 
+        'getUserChansStats': function(server, nick, fields){
+            //TODO(samstudio8) If no fields, return all keys
+            if(!server || !nick) return false;
+            if(!_.has(dbot.db.userStats, server) 
+                    || !_.has(dbot.db.chanStats, server)) return false;
+
+            var userStats = dbot.db.userStats[server];
+            var chanStats = dbot.db.chanStats[server];
+            var primary = dbot.api.users.resolveUser(server, nick, true).toLowerCase();
+
+            if(!_.has(userStats, primary)) return false;
+
+            var reply = {
+                "channels": {},
+                "request": {
+                    "server": server,
+                    "user": nick,
+                }
+            };
+
+            _.each(userStats[primary], function(chan, chanName){
+                var chanReply = dbot.api.stats.getUserStats(server, primary, chanName, fields);
+                if(chanReply){
+                    reply.channels[chanName] = chanReply;
+                    reply.channels[chanName].online = dbot.api.users.isOnline(
+                                                        server,
+                                                        chanReply.primary,
+                                                        chanName,
+                                                        true);
+                    reply.channels[chanName].active = dbot.api.stats.isActive({
+                                                        'server': server,
+                                                        'user': chanReply.primary,
+                                                        'channel': chanName});
+                }
+            });
+            return reply;
+        },
+
         'getChanUsersStats': function(server, channel, fields){
             //TODO(samstudio8) If no fields, return all keys
             if(!server || !channel) return false;
@@ -541,7 +579,7 @@ var api = function(dbot) {
                 }
             });
             return reply;
-        },
+        }
     };
 };
 
