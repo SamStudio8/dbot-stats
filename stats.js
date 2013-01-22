@@ -9,8 +9,8 @@ var stats = function(dbot){
 
     this.listener = function(event){
 
-        // Ignore command messages
-        if(event.message[0] == "~"){
+        // Ignore command messages or PM
+        if(event.message[0] == "~" || event.channel == event.user){
             return;
         }
         
