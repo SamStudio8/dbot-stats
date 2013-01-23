@@ -1,6 +1,17 @@
 #stats
 A statistics module for <a href="https://github.com/reality/depressionbot">depressionbot</a>.
 
+##Requirements
+###DepressionBot Core
+Besides command, stats requires the following modules from depressionbot core to be enabled:
+* <a href="https://github.com/reality/depressionbot/tree/master/modules/users">users</a>
+* <a href="https://github.com/reality/depressionbot/tree/master/modules/timers">timers</a>
+
+###moment.js
+<a href="http://momentjs.com/">Moment.js</a>
+```
+npm install moment
+```
 ##Commands
 ###~lines [user]
 Report the number of messages a particular user has spoken in the current channel.<br />
