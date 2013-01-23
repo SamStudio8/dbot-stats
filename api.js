@@ -1,4 +1,5 @@
 var _ = require('underscore')._;
+var moment = require('moment');
 
 var api = function(dbot) {
     return {
@@ -104,7 +105,11 @@ var api = function(dbot) {
             // If inLast is not defined, default to ten minutes
             var inLast = typeof request.inLast !== "undefined" ? inLast : 10;
             var dateActive = function(last, interval){
-                return((Date.now() - last) < interval*60000);
+                return {
+                    "active": (moment().diff(last, 'minutes', true) < interval),
+                    "msdiff": moment().diff(last),
+                    "ago": moment(last).fromNow()
+                };
             };
 
             if(request.server){
@@ -127,9 +132,16 @@ var api = function(dbot) {
                     var primary = dbot.api.users.resolveUser(request.server, request.user, true);
                     primary = primary.toLowerCase();
                     if(!_.has(!userStats, primary)) return false;
+
+                    var mostRecent = false;
+                    var mostRecent_ms;
                     _.each(userStats[primary], function(chan, chanName){
-                        if(dateActive(userStats[primary][curr_chan].lines.time.last.stamp, inLast)) return true;
+                        var result = dateActive(userStats[primary][curr_chan].lines.time.last.stamp, inLast);
+                        if(result.msdiff < mostRecent_ms){
+                            mostRecent = result;
+                        }
                     });
+                    return mostRecent;
                 }
                 else if(request.channel){
                     if(!_.has(chanStats, request.channel)) return false;
