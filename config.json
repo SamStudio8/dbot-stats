@@ -1,5 +1,6 @@
 {
     "dbKeys": [ "userStats", "chanStats" ],
     "ignorable": false,
-    "help": "https://github.com/SamStudio8/stats/blob/master/README.md"
+    "help": "https://github.com/SamStudio8/stats/blob/master/README.md",
+    "dependencies": [ "command", "users" ]
 }
