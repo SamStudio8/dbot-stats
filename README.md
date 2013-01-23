@@ -8,10 +8,12 @@ Besides command, stats requires the following modules from depressionbot core to
 * <a href="https://github.com/reality/depressionbot/tree/master/modules/timers">timers</a>
 
 ###moment.js
-<a href="http://momentjs.com/">Moment.js</a>
+<a href="http://momentjs.com/">http://momentjs.com</a>
 ```
 npm install moment
 ```
+To format stats timestamps with moment, see <a href="http://momentjs.com/docs/#/displaying/format/">Display Format</a>.
+
 ##Commands
 ###~lines [user]
 Report the number of messages a particular user has spoken in the current channel.<br />
@@ -123,6 +125,49 @@ A successful reply will follow the following format;
 ```
 Note you should validate the reply itself. If ```server``` or ```channel``` pertain to invalid keys, the reply will be ```false```.
 Also worth noting is that requested fields which do not match to a property of the channel will not be in the fields sub-object.
+
+###getUserChansStats(\<server\>, \<user\>, \<field(s)\>)
+Calls ```getUserStats``` with a given ```user``` on the ```server```, for each of the channels ```user``` has been recorded in.<br />
+This function is typically used for the web interface when displaying a list of channels a user is associated with.
+A successful reply will follow the following format;
+```
+{
+  "channels":       An object containing a response for each channel with data for the selected user.
+  {
+    "<channel>":    The name of the channel.
+    {
+      "display":    Either the alias and primary nick in the form 'alias (primary)' or if the name
+                    is not an alias, simply the primary nick itself.
+      "primary":    The primary nick of the profile.
+      "online":     A boolean to indicate whether the user is currently in the channel.
+      "active":     A boolean to indicate whether this user has been active in the channel.
+      "fields":     An object containing a response for each valid field of the request.
+      {
+        "<field>":  The name of the field requested is used as the key for each field response object.
+        {
+          "name":   The name of the field requested.
+          "data":   Formatted data, the result of this.format(this.data) on the data field in question.
+                    For example, for wpl this result would be formatted to 2dp and appended with ' wpl'.
+          "raw":    Raw data, the value of the data field before it was formatted.
+                    For example, for lines, this would be missing thousands separators.
+                    Required if you wish to use the result for further numerical calculation.
+          "init":   The timestamp object for when the first record of this statistic was recorded.
+                    Typically you will want to use init (which calls toString) or init.format(<format>).
+          "last":   The timestamp object for when this statistic was last updated by the listener.
+                    Typically you will want to use init (which calls toString) or init.format(<format>).
+        }
+      }
+    }
+  }
+  "request":        An object containing some of the request parameters.
+  {
+    "server":       The server from the request.
+    "user":         The username from the request (not lowercased or resolved).
+  }
+}
+```
+Note to validate the reply itself. If ```server``` or ```user``` pertain to invalid keys, the reply will be ```false```.
+Also worth noting is that requested fields which do not match to a property of the user will not be in the fields sub-object.
 
 ###getChanUsersStats(\<server\>, \<channel\>, \<field(s)\>)
 Calls ```getUserStats``` for each user on the ```server``` with a key for the specified ```channel```.<br />
