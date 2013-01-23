@@ -42,9 +42,9 @@
       "english": "Most verbose users in {chan} since {start}: {list}"
     },
     "user_last": {
-      "english": "{user} last seen in {chan} on {last}"
+      "english": "{user} was last seen in {chan} {last}"
     },
     "chan_last": {
-      "english": "Last activity in {chan} recorded on {last}"
+      "english": "Last activity in {chan} recorded {last}"
     }
 }

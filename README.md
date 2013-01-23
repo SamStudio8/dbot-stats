@@ -64,9 +64,9 @@ A successful reply will follow the following format;
                 For example, for lines, this would be missing thousands separators.
                 Required if you wish to use the result for further numerical calculation.
       "init":   The timestamp object for when the first record of this statistic was recorded.
-                Typically you will want to use init (which calls toString) or init.full().
+                Typically you will want to use init (which calls toString) or init.format(<format>).
       "last":   The timestamp object for when this statistic was last updated by the listener.
-                Typically you will want to use init (which calls toString) or init.full().
+                Typically you will want to use init (which calls toString) or init.format(<format>).
     }
   }
   "request":    An object containing some of the request parameters.
@@ -98,9 +98,9 @@ A successful reply will follow the following format;
                 For example, for lines, this would be missing thousands separators.
                 Required if you wish to use the result for further numerical calculation.
       "init":   The timestamp object for when the first record of this statistic was recorded.
-                Typically you will want to use init (which calls toString) or init.full().
+                Typically you will want to use init (which calls toString) or init.format(<format>).
       "last":   The timestamp object for when this statistic was last updated by the listener.
-                Typically you will want to use init (which calls toString) or init.full().
+                Typically you will want to use init (which calls toString) or init.format(<format>).
     }
   }
   "request":    An object containing some of the request parameters.
@@ -140,9 +140,9 @@ A successful reply will follow the following format;
                     For example, for lines, this would be missing thousands separators.
                     Required if you wish to use the result for further numerical calculation.
           "init":   The timestamp object for when the first record of this statistic was recorded.
-                    Typically you will want to use init (which calls toString) or init.full().
+                    Typically you will want to use init (which calls toString) or init.format(<format>).
           "last":   The timestamp object for when this statistic was last updated by the listener.
-                    Typically you will want to use init (which calls toString) or init.full().
+                    Typically you will want to use init (which calls toString) or init.format(<format>).
         }
       }
     }
@@ -181,7 +181,7 @@ A successful leaderboarder reply returns the format;
                   places parameter due to insufficient data. You should ensure this is larger than
                   zero when validating the reply.
   "init":         The timestamp object for when the first record of this statistic was recorded.
-                  Typically you will want to use init (which calls toString) or init.full().
+                  Typically you will want to use init (which calls toString) or init.format(<format>).
   "request":      An object containing some of the request parameters.
   {
     "server":     The server from the request.
@@ -221,7 +221,7 @@ A successful reply will be of the form;
 
   }
   "init":       The timestamp object for when the first record of this statistic was recorded.
-                Typically you will want to use init (which calls toString) or init.full().
+                Typically you will want to use init (which calls toString) or init.format(<format>).
   "tz":         Timezone of timestamp to provide context to data that involves hours.
   "request":    An object containing some of the request parameters.
   {

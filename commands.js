@@ -250,7 +250,7 @@ var commands = function(dbot){
                     event.reply(dbot.t("user_last", {
                         "user": result.primary,
                         "chan": result.request.channel,
-                        "last": result.fields.lines.last.full()
+                        "last": result.fields.lines.last.ago()
                     }));
                 }
                 else{
@@ -264,7 +264,7 @@ var commands = function(dbot){
                 if(result){
                     event.reply(dbot.t("chan_last", {
                         "chan": result.request.channel,
-                        "last": result.fields.lines.last.full()
+                        "last": result.fields.lines.last.ago()
                     }));
                 }
             }

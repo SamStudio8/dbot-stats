@@ -1,5 +1,5 @@
 var _ = require('underscore')._;
-
+var moment = require('moment');
 
 var fieldFactory = function(key, toField){
 
@@ -111,10 +111,16 @@ var fieldFactory = function(key, toField){
             "init": {
                 "stamp": Date.now(),
                 "toString": function(){ 
-                    return new Date(this.stamp).toDateString(); 
+                    return moment(this.data).format("ddd, Do MMMM YYYY");
                 },
-                "full": function(){ 
-                    return new Date(this.stamp).toString(); 
+                "format": function(format){
+                    if(!format){
+                        var format = "ddd, Do MMMM YYYY";
+                    }
+                    return moment(this.data).format(format);
+                },
+                "ago": function(){
+                    return moment(this.stamp).fromNow();
                 }
             },
             "last": {
@@ -122,8 +128,14 @@ var fieldFactory = function(key, toField){
                 "toString": function(){ 
                     return new Date(this.stamp).toDateString(); 
                 },
-                "full": function(){ 
-                    return new Date(this.stamp).toString(); 
+                "format": function(format){
+                    if(!format){
+                        var format = "ddd, Do MMMM YYYY";
+                    }
+                    return moment(this.data).format(format);
+                },
+                "ago": function(){
+                    return moment(this.stamp).fromNow();
                 }
             }
         }
@@ -224,7 +236,10 @@ var fieldFactoryOutlet = function(request, api){
                 return Date.now();
             },
             "toString": function(){ 
-                return new Date(this.data).toDateString();
+                return moment(this.data).format("ddd, Do MMMM YYYY");
+            },
+            "ago": function(){
+                return moment(this.data).fromNow();
             },
             "merge": function(merge){
                 if(merge.data < this.data){
@@ -290,7 +305,10 @@ var fieldFactoryOutlet = function(request, api){
                 return Date.now();
             },
             "toString": function(){ 
-                return new Date(this.data).toDateString();
+                return moment(this.data).format("ddd, Do MMMM YYYY");
+            },
+            "ago": function(){
+                return moment(this.data).fromNow();
             },
             "merge": function(merge){
                 if(merge.data < this.data){
