@@ -125,7 +125,6 @@ var stats = function(dbot){
         // Add API Hooks
         dbot.api.command.addHook('~setaliasparent', this.api.renameStats);
         dbot.api.command.addHook('~mergeusers', this.api.mergeStats);
-        dbot.api.event.addHook('nick_change', this.api.renameStats);
 
     }.bind(this);
     
