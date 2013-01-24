@@ -39,7 +39,7 @@ var api = function(dbot) {
         },
 
         /**
-         * Given a server and a primary username which has been convered to a
+         * Given a server and a primary username which has been converted to a
          * secondary alias, resolve the alias to its primary and merge all
          * the statistics keys of the secondary user into its new primary.
          */
