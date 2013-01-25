@@ -62,7 +62,7 @@ var stats = function(dbot){
                 if(user != mentioned
                         && userStats[event.server].hasOwnProperty(mentioned) 
                         && userStats[event.server][mentioned].hasOwnProperty(event.channel)){
-                    var toMatch = "( |^)"+name.escape().toLowerCase()+":?(?=\\s|$)";
+                    var toMatch = "( |^)"+name.escape().toLowerCase()+"(:|'s)?(?=\\s|$)";
                     if(event.message.toLowerCase().search(toMatch) > -1){
                         userStats[event.server][user][event.channel]["out_mentions"].add({"mentioned": mentioned,
                                                                                           "inc": 1});
