@@ -111,13 +111,13 @@ var fieldFactory = function(key, toField){
             "init": {
                 "stamp": Date.now(),
                 "toString": function(){ 
-                    return moment(this.data).format("ddd, Do MMMM YYYY");
+                    return moment(this.stamp).format("ddd, Do MMMM YYYY");
                 },
                 "format": function(format){
                     if(!format){
                         var format = "ddd, Do MMMM YYYY";
                     }
-                    return moment(this.data).format(format);
+                    return moment(this.stamp).format(format);
                 },
                 "ago": function(){
                     return moment(this.stamp).fromNow();
@@ -132,7 +132,7 @@ var fieldFactory = function(key, toField){
                     if(!format){
                         var format = "ddd, Do MMMM YYYY";
                     }
-                    return moment(this.data).format(format);
+                    return moment(this.stamp).format(format);
                 },
                 "ago": function(){
                     return moment(this.stamp).fromNow();
