@@ -270,6 +270,52 @@ var fieldFactoryOutlet = function(request, api){
                 return this.format(this.getRaw(getreq));
             },
         },
+        "week": {
+            "def": function(){ 
+                var freq = {};
+                var day = new Date().getDay();
+
+                var modAdd;
+                var modCorrection;
+                for(var i=0; i<=6; i++){
+                    freq[i] = {};
+                    for(var j=0; j<=23; j++){
+                        freq[i][j] = 0;
+                    }
+                    
+                    // Attempt to initialise each day of the 7-day rolling data
+                    // object with a name property that defines the day of the 
+                    // week and day of the month, starting backwards from today.
+                    modAdd = 1;
+                    modCorrection = 7;
+                    if(day == 0){ modAdd = 0; } // Prevent off-by-one days on Sundays
+                    if(i == day){ modCorrection = 0; } //Don't rollback today's date
+
+                    freq[i]["name"] = moment(Date.now()).add("days", (((i+day+modAdd) % 7)-modCorrection)).format("dddd Do");
+                }
+                freq["ptr"] = day;
+                return freq;
+            },
+            "get": function(getreq){
+                if(!_.has(getreq, "day") || !_.has(getreq, "hour")) return;
+                if(addreq.day < 0 || addreq.day > 6 || addreq.hour < 0 || addreq.hour > 23) return;
+                return this.format(this.data[getreq.day][getreq.hour]);
+            },
+            "add": function(addreq){
+                if(!_.has(addreq, "day") || !_.has(addreq, "hour") || !_.has(addreq, "inc")) return;
+                if(addreq.day < 0 || addreq.day > 6 || addreq.hour < 0 || addreq.hour > 23) return;
+                this.data[addreq.day][addreq.hour] += addreq.inc;
+            },
+            "merge": function(merge){
+                //TODO(samstudio8) In theory merge handling for week.ptr and 
+                // week.day.name should not be necessary.
+                for(var i=0; i<=6; i++){
+                    for(var j=0; j<=23; j++){
+                        this.data[i][j] += merge.data[i][j];
+                    }
+                }
+            }
+        },
         "freq": {
             "def": function(){ 
                 var freq = {};

@@ -591,6 +591,19 @@ var api = function(dbot) {
                 }
             });
             return reply;
+        },
+
+        'rolloverChannel': function(server, channel){
+            if(!server || !channel) return false;
+            if(!_.has(dbot.db.chanStats, server)
+                    || !_.has(dbot.db.chanStats[server], channel)) return false;
+
+            var ptr = dbot.db.chanStats[server][channel].week.data["ptr"] + 1;
+            dbot.db.chanStats[server][channel].week.data["ptr"] = ptr;
+            if(dbot.db.chanStats[server][channel].week.data["ptr"] > 6){
+                dbot.db.chanStats[server][channel].week.data["ptr"] = 0;
+            }
+            dbot.db.chanStats[server][channel].week.data[ptr]["name"] = moment(Date.now()).format("dddd Do");
         }
     };
 };

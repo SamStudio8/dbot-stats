@@ -5,6 +5,7 @@ var stats = function(dbot){
     //TODO(samstudio8) @reality is officially deprecating snippets.js,
     //cannot rely on filter or numberFormat
     var _ = require('underscore')._;
+    var moment = require('moment');
     var structure = require('./structures');
 
     this.listener = function(event){
@@ -46,6 +47,10 @@ var stats = function(dbot){
             _.defaults(chanStats[event.server][event.channel], structure.fieldFactoryOutlet("chan", this.api));
         }
         chanStats[event.server][event.channel]["freq"].add({"day": event.time.getDay(),
+                                                            "hour": event.time.getHours(),
+                                                            "inc": 1
+        });
+        chanStats[event.server][event.channel]["week"].add({"day": chanStats[event.server][event.channel]["week"].data["ptr"],
                                                             "hour": event.time.getHours(),
                                                             "inc": 1
         });
@@ -118,6 +123,10 @@ var stats = function(dbot){
                         field.time.last.toString = fieldFactoryChanProduct[fieldName].time.last.toString;
                     }
                 });
+
+                // Add Timers
+                var midnight = moment().eod().add("ms", 1).toDate();
+                dbot.api.timers.addTimer(86400000, api.rolloverChannel.bind(this, serverName, chanName), midnight);
             });
         });
         dbot.save();

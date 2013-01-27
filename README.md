@@ -5,6 +5,7 @@ A statistics module for <a href="https://github.com/reality/depressionbot">depre
 ###DepressionBot Core
 Besides command, stats requires the following modules from depressionbot core to be enabled:
 * <a href="https://github.com/reality/depressionbot/tree/master/modules/users">users</a>
+* <a href="https://github.com/reality/depressionbot/tree/master/modules/event">event</a>
 * <a href="https://github.com/reality/depressionbot/tree/master/modules/timers">timers</a>
 
 ###moment.js
