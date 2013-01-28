@@ -273,10 +273,8 @@ var fieldFactoryOutlet = function(request, api){
         "week": {
             "def": function(){ 
                 var freq = {};
-                var day = new Date().getDay();
 
-                var modAdd;
-                var modCorrection;
+                var modAns;
                 for(var i=0; i<=6; i++){
                     freq[i] = {};
                     for(var j=0; j<=23; j++){
@@ -286,14 +284,16 @@ var fieldFactoryOutlet = function(request, api){
                     // Attempt to initialise each day of the 7-day rolling data
                     // object with a name property that defines the day of the 
                     // week and day of the month, starting backwards from today.
-                    modAdd = 1;
-                    modCorrection = 7;
-                    if(day == 0){ modAdd = 0; } // Prevent off-by-one days on Sundays
-                    if(i == day){ modCorrection = 0; } //Don't rollback today's date
-
-                    freq[i]["name"] = moment(Date.now()).add("days", (((i+day+modAdd) % 7)-modCorrection)).format("dddd Do");
+                    // Element 0 will hold "today".
+                    if(i == 0){
+                        modAns = 0;
+                    }
+                    else{
+                        modAns = (i % 7)-7;
+                    }
+                    freq[i]["name"] = moment(Date.now()).add("days", modAns).format("dddd Do");
                 }
-                freq["ptr"] = day;
+                freq["ptr"] = 0;
                 return freq;
             },
             "get": function(getreq){
