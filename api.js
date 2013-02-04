@@ -602,7 +602,15 @@ var api = function(dbot) {
             dbot.db.chanStats[server][channel].week.data["ptr"] = ptr;
             if(dbot.db.chanStats[server][channel].week.data["ptr"] > 6){
                 dbot.db.chanStats[server][channel].week.data["ptr"] = 0;
+                ptr = 0;
             }
+
+            // Zero the frequency array data
+            for(var i=0; i<=23; i++){
+                dbot.db.chanStats[server][channel].week.data[ptr][i] = 0;
+            }
+
+            // Set the day name
             dbot.db.chanStats[server][channel].week.data[ptr]["name"] = moment(Date.now()).format("dddd Do");
         }
     };
