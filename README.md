@@ -317,16 +317,17 @@ Upon completion, ```mergeFrom``` will be removed from the database.
 Return the server.user.channel objects for all users on a server who have a dbKey for a particular channel.<br />
 Note this function is regarded as an "internal" API function and could be subject to change or removal without notice.
 
-###rolloverChannel(\<server\>, \<channel\>)
-Move the current day pointer for all rolling data point fields forward for the given ```channel``` on ```server```.
-Typically this would be called automatically by a timer at midnight each day.
-Note this function is regarded as an "internal" API function and could be subject to change or removal without notice.
+###roll()
+Calls ```__rolloverChannel``` for all channels for all servers. Typically this would be called automatically by a timer at midnight each day.
+
+###__rolloverChannel(\<server\>, \<channel\>)
+Move the current day pointer for all rolling data point fields forward for the given ```channel``` on ```server```. Note that if this function is called outside of ```roll```, the database is not automatically saved. Note also that this function is regarded as an "internal" API function and could be subject to change or removal without notice.
 
 ##Timers
 ###Channel Rollover
-Responsible for moving the current day pointer forward on all rolling data point fields for all channels on all servers at the end of each day.
+Responsible for moving the current day pointer forward on all 'rolling' data fields for all channels on all servers at the end of each day.
 * Interval: 86,400,000 ms (One day)
-* Callback: dbot.api.stats.rolloverChannel(```server```, ```channel```)
+* Callback: dbot.api.stats.roll()
 
 ##Licence
 stats is distributed under the MIT license, see LICENCE for further information.

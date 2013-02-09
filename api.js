@@ -593,7 +593,24 @@ var api = function(dbot) {
             return reply;
         },
 
-        'rolloverChannel': function(server, channel){
+        /**
+         * Call __rolloverChannel for all channels on each server for which the
+         * bot is collecting statistics from.
+         */
+        'roll': function(){
+            _.each(dbot.db.chanStats, function(server, serverName){
+                _.each(server, function(channel, channelName){
+                    dbot.api.stats.__rolloverChannel(serverName, channelName);
+                });
+            });
+            dbot.save();
+        },
+
+        /**
+         * Roll the current day pointer for all round robin style data points
+         * for a particular channel on a server.
+         */
+        '__rolloverChannel': function(server, channel){
             if(!server || !channel) return false;
             if(!_.has(dbot.db.chanStats, server)
                     || !_.has(dbot.db.chanStats[server], channel)) return false;

@@ -123,13 +123,13 @@ var stats = function(dbot){
                         field.time.last.toString = fieldFactoryChanProduct[fieldName].time.last.toString;
                     }
                 });
-
-                // Add Timers
-                var midnight = moment().eod().add("ms", 1).toDate();
-                dbot.api.timers.addTimer(86400000, api.rolloverChannel.bind(this, serverName, chanName), midnight);
             });
         });
         dbot.save();
+
+        // Add Timer
+        var midnight = moment().eod().add("ms", 1).toDate();
+        dbot.api.timers.addTimer(86400000, api.roll.bind(this), midnight);
 
         // Add API Hooks
         dbot.api.command.addHook('~setaliasparent', this.api.renameStats);
@@ -139,7 +139,7 @@ var stats = function(dbot){
     
     this.onDestroy = function() {
         // Destroy structures cache so it can be reloaded with changes applied
-        var cacheKey = require.resolve('./structures');                                                                                                                   
+        var cacheKey = require.resolve('./structures');
         delete require.cache[cacheKey];
     }.bind(this);
 };
