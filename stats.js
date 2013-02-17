@@ -59,8 +59,8 @@ var stats = function(dbot){
 
         // Check whether the line includes any mentions
         if(dbot.db.hasOwnProperty("knownUsers")){
-            var cat = dbot.db.knownUsers[event.server].users.concat(
-                    Object.keys(dbot.db.knownUsers[event.server].aliases));
+            //TODO Temporary Patch for Mass User Problem
+            var cat = Object.keys(dbot.instance.connections[event.server].channels[event.channel].nicks);
             for (var i = 0; i < cat.length; i++){
                 var name = cat[i];
                 var mentioned = dbot.api.users.resolveUser(event.server, name, true).toLowerCase();
