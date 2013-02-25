@@ -40,7 +40,7 @@
         "na'vi": "kawtu pameng {user}ur taluna kxawm fìtute keftxo 'efängu :("
     },
     "out_mentions": {
-        "en": "{user} mentions most ({chan}, since {start}): {list}"
+        "en": "{user} mentions most ({chan}, since {start}): {list}",
         "na'vi":"krra {user} plltxe nìtxan ({chan} takrra {start}): {list}"
     },
     "no_out_mentions": {
