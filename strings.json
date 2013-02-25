@@ -1,50 +1,66 @@
 {
     "user_lines": {
-        "english": "{user} has spoken {lines} messages in {chan} since {start}"
+        "en": "{user} has spoken {lines} messages in {chan} since {start}",
+        "na'vi": "{lines}a {user} pamlltxe mì {chan} takrra {start}"
     },
     "chan_lines": {
-        "english": "I've read {lines} messages in {chan} since {start}"
+        "en": "I've read {lines} messages in {chan} since {start}",
+        "na'vi": "Oel olinan upxareti a{lines} mì {chan} takrra {start}"
     },
     "user_words": {
-        "english": "{user} has spoken {words} words ({avg}) in {chan} since {start}"
+        "en": "{user} has spoken {words} words ({avg}) in {chan} since {start}",
+        "na'vi": "{user}ìl pamlltxe aylì'uti a{words} ({avg}) mì {chan} takrra {start}"
     },
     "chan_words": {
-        "english": "I've read {words} words ({avg}) in {chan} since {start}"
+        "en": "I've read {words} words ({avg}) in {chan} since {start}",
+        "na'vi": "Oel olinan aylì'uti a{words} ({avg}) mì {chan} takrra {start}"
     },
     "no_data": {
-        "english": "I don't recall seeing {user} in here, are you sure they exist?"
+        "en": "I don't recall seeing {user} in here, are you sure they exist?",
+        "na'vi": "Oel ke tsun ziverok {user}ìl fìtsengeti tok, nga omum futa fìtute tok srak?"
     },
     "lines_percent": {
-        "english": "{user} is responsible for {percent} ({lines}) messages in {chan} since {start}"
+        "en": "{user} is responsible for {percent} ({lines}) messages in {chan} since {start}",
+        "na'vi": "{user}ìl aminan {percent} ({lines}) upxareti mì {chan] takrra {start}"
     },
     "hours_active": {
-        "english": "Since {start}, {name} is typically most active between {start_hour}:00 and {end_hour}:00 ({tz}) on {day}s"
+        "en": "Since {start}, {name} is typically most active between {start_hour}:00 and {end_hour}:00 ({tz}) on {day}s",
+        "na'vi": "krrta {start}, {name}yä txampxì lamu {start_hour}:00 sì {end_hour}:00 ({tz}) mì hrr"
     },
     "loudest": {
-        "english": "Loudest users in {chan} since {start}: {list}"
+        "en": "Loudest users in {chan} since {start}: {list}",
+        "na'vi": "sute awok lu {list} (takrra {start})"
     },
     "in_mentions": {
-        "english": "{user} most mentioned by ({chan}, since {start}): {list}"
+        "en": "{user} most mentioned by ({chan}, since {start}): {list}",
+        "na'vi": "{list} peng {user}ur takrra {start} mì {chan}"
     },
     "no_in_mentions": {
-        "english": "No-one talks to {user}, what a lonely life :("
+        "en": "No-one talks to {user}, what a lonely life :(",
+        "na'vi": "kawtu pameng {user}ur taluna kxawm fìtute keftxo 'efängu :("
     },
     "out_mentions": {
-        "english": "{user} mentions most ({chan}, since {start}): {list}"
+        "en": "{user} mentions most ({chan}, since {start}): {list}",
+        "na'vi":"krra {user} plltxe nìtxan ({chan} takrra {start}): {list}"
     },
     "no_out_mentions": {
-        "english": "{user} doesn't seem to have mentioned anyone, how sad :("
+        "en": "{user} doesn't seem to have mentioned anyone, how sad :(",
+        "na'vi": "{user} ke peng kawturu, fìkem (fu kekem) lu keftxo :("
     },
     "popular": {
-        "english": "Most mentioned users in {chan} since {start}: {list}"
+        "en": "Most mentioned users in {chan} since {start}: {list}",
+        "na'vi": "{list} pängkxo nìhawng mì {chan} (takrra {start})"
     },
     "verbose": {
-      "english": "Most verbose users in {chan} since {start}: {list}"
+        "en": "Most verbose users in {chan} since {start}: {list}",
+        "na'vi": "sutel pivlltxe mì {chan} nìtxan krrta {start} lu {list}"
     },
     "user_last": {
-      "english": "{user} was last seen in {chan} {last}"
+        "en": "{user} was last seen in {chan} {last}",
+        "na'vi": "Oel tse'a {user}it mì {chan} - {last}"
     },
     "chan_last": {
-      "english": "Last activity in {chan} recorded {last}"
+        "en": "Last activity in {chan} recorded {last}",
+        "na'vi": "{last} lamu tìpängkxo mì {chan}"
     }
 }
