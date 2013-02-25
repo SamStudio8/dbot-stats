@@ -41,6 +41,7 @@
     },
     "out_mentions": {
         "en": "{user} mentions most ({chan}, since {start}): {list}"
+        "na'vi":"krra {user} plltxe nìtxan ({chan} takrra {start}): {list}"
     },
     "no_out_mentions": {
         "en": "{user} doesn't seem to have mentioned anyone, how sad :(",
