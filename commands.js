@@ -160,6 +160,25 @@ var commands = function(dbot){
             }
         },
 
+        '~wordiest': function(event){
+            if(!event.params[1]){
+                var result = this.api.leaderboarder(event.server, null, event.channel, "wordiest", 5, false);
+                if(result){
+                    event.reply(dbot.t("wordiest", {
+                        "chan": result.request.channel,
+                        "start": result.init,
+                        "list": result.leaderboard
+                    }));
+                }
+            }
+            else{
+                event.message = '~words ' + dbot.api.users.resolveUser(event.server, event.params[1], true);
+                event.action = 'PRIVMSG';
+                event.params = event.message.split(' ');
+                dbot.instance.emit(event);
+            }
+        },
+
         '~popular': function(event){
             if(!event.params[1]){
                 var result = this.api.leaderboarder(event.server, null, event.channel, "popular", 5, false);

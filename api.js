@@ -196,6 +196,7 @@ var api = function(dbot) {
                 "loudest": "lincent",
                 "verbose": "wpl",
                 "popular": "in_mentions",
+                "wordiest": "words",
             };
 
             //TODO(samstudio8)
