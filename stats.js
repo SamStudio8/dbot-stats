@@ -128,7 +128,7 @@ var stats = function(dbot){
         dbot.save();
 
         // Add Timer
-        var midnight = moment().eod().add("ms", 1).toDate();
+        var midnight = moment().endOf("day").add("ms", 1).toDate();
         dbot.api.timers.addTimer(86400000, api.roll.bind(this), midnight);
 
         // Add API Hooks
