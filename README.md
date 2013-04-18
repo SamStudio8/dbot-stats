@@ -1,4 +1,4 @@
-#stats
+#dbot-stats
 A statistics module for <a href="https://github.com/reality/depressionbot">depressionbot</a>.
 
 ##Requirements
