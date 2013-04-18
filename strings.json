@@ -32,7 +32,7 @@
     "hours_active": {
         "en": "Since {start}, {name} is typically most active between {start_hour}:00 and {end_hour}:00 ({tz}) on {day}s",
         "na'vi": "krrta {start}, {name}yä txampxì lamu {start_hour}:00 sì {end_hour}:00 ({tz}) mì hrr",
-        "es": "Desde {start}, {name} típicamente está lo más activo entre {start_hour)H00 y {end_hour}H00"
+        "es": "Desde {start}, {name} típicamente está lo más activo entre {start_hour)H00 y {end_hour}H00 ({tz}) los {day}s"
     },
     "loudest": {
         "en": "Loudest users in {chan} since {start}: {list}",
