@@ -349,7 +349,7 @@ var api = function(dbot) {
                 // Return the most active day-hour interval for a given array.
                 "active": function(freq){
                     var days = {'1':"Monday",
-                                '2':"Tueday",
+                                '2':"Tuesday",
                                 '3':"Wednesday",
                                 '4':"Thursday",
                                 '5':"Friday",
