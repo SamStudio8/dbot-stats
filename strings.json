@@ -26,7 +26,7 @@
     },
     "lines_percent": {
         "en": "{user} is responsible for {percent} ({lines}) messages in {chan} since {start}",
-        "na'vi": "{user}ìl aminan {percent} ({lines}) upxareti mì {chan] takrra {start}",
+        "na'vi": "{user}ìl aminan {percent} ({lines}) upxareti mì {chan} takrra {start}",
         "es": "{user} es responsable para {percent} ({lines}) de los mensajes en {chan} desde {start}"
     },
     "hours_active": {
