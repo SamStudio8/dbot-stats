@@ -3,101 +3,118 @@
         "en": "{user} has spoken {lines} messages in {chan} since {start}",
         "na'vi": "{lines}a {user} pamlltxe mì {chan} takrra {start}",
         "es": "{user} ha dicho {lines} mensajes en {chan} desde {start}",
+        "cy": "{user} wedi siarad {lines} neges yn {chan} ers {start}",
         "nl": "{user} heeft {lines} berichten verzonden in {chan} sinds {start}"
     },
     "chan_lines": {
         "en": "I've read {lines} messages in {chan} since {start}",
         "na'vi": "Oel olinan upxareti a{lines} mì {chan} takrra {start}",
         "es": "He leído {lines} mensajes en {chan} desde {start}",
+        "cy": "Rydw i wedi darllen {lines} neges in {chan} ers {start}",
         "nl": "Ik heb {lines} berichten gelezen in {chan} sinds {start}"
     },
     "user_words": {
         "en": "{user} has spoken {words} words ({avg}) in {chan} since {start}",
         "na'vi": "{user}ìl pamlltxe aylì'uti a{words} ({avg}) mì {chan} takrra {start}",
         "es": "{user} ha dicho {words} palabras ({avg}) en {chan} desde {start}",
+        "cy": "{user} wedi siarad {words} geiriau ({avg}) yn {chan} ers {start}",
         "nl": "{user} heeft {words} woorden ({avg}) gezegd in {chan} sinds {start}"
     },
     "chan_words": {
         "en": "I've read {words} words ({avg}) in {chan} since {start}",
         "na'vi": "Oel olinan aylì'uti a{words} ({avg}) mì {chan} takrra {start}",
         "es": "He leído {words} palabras ({avg}) en {chan} desde {start}",
+        "cy": "Rydw i wedi darllen {words} geiriau ({avg}) yn {chan} ers {start}",
         "nl": "Ik heb {words} woorden ({avg}) gelezen in {chan} sinds {start}"
     },
     "no_data": {
         "en": "I don't recall seeing {user} in here, are you sure they exist?",
         "na'vi": "Oel ke tsun ziverok {user}ìl fìtsengeti tok, nga omum futa fìtute tok srak?",
         "es": "No recuerdo ver {user} aquí, ¿estás seguro que exista?",
+        "cy": "Dydw i ddim yn cofio gweld {user} i mewn yma, ydych chi'n siŵr eu bod yn bodoli?",
         "nl": "Ik kan me geen {user} herinneren. Weet je zeker dat die bestaat?"
     },
     "lines_percent": {
         "en": "{user} is responsible for {percent} ({lines}) messages in {chan} since {start}",
         "na'vi": "{user}ìl aminan {percent} ({lines}) upxareti mì {chan} takrra {start}",
         "es": "{user} es responsable para {percent} ({lines}) de los mensajes en {chan} desde {start}",
+        "cy": "Mae {user} yn gyfrifol am {percent} ({lines}) neges yn {chan} ers {start}",
         "nl": "{user} is verantwoordelijk voor {percent} ({lines}) berichten in {chan} sinds {start}"
     },
     "hours_active": {
         "en": "Since {start}, {name} is typically most active between {start_hour}:00 and {end_hour}:00 ({tz}) on {day}s",
         "na'vi": "krrta {start}, {name}yä txampxì lamu {start_hour}:00 sì {end_hour}:00 ({tz}) mì hrr",
         "es": "Desde {start}, {name} típicamente está lo más activo entre {start_hour)H00 y {end_hour}H00 ({tz}) los {day}s",
+        "cy": "Ers {start}, {name} yn nodweddiadol mwyaf gweithgar rhwng {start_hour}:00 a {end_hour}:00 ({tz}) ar {day}",
         "nl": "Sinds {start}, {name} is gebruikelijk actief tussen {start_hour}:00 en {end_hour}:00 ({tz}} op {day}s"
     },
     "loudest": {
         "en": "Loudest users in {chan} since {start}: {list}",
         "na'vi": "sute awok lu {list} (takrra {start})",
         "es": "Usarios más ruidosos en {chan} desde {start}: {list}",
+        "cy": "Defnyddwyr mwyaf swnllyd yn {chan} ers {start}: {list}",
         "nl": "Luidruchtigste personen in {chan} sinds {start}: {list}"
     },
     "in_mentions": {
         "en": "{user} most mentioned by ({chan}, since {start}): {list}",
         "na'vi": "{list} peng {user}ur takrra {start} mì {chan}",
         "es": "Los usarios que más mencionan {user} ({chan}, desde {start}) son: {list}",
+        "cy": "{user} a grybwyllwyd fwyaf gan ({chan}, ers {start}): {list}",
         "nl": "{user} meest aangehaald door ({chan}, sinds {start}): {list}"
     },
     "no_in_mentions": {
         "en": "No-one talks to {user}, what a lonely life :(",
         "na'vi": "kawtu pameng {user}ur taluna kxawm fìtute keftxo 'efängu :(",
         "en": "Nadie habla con {user}, qué vida más solitaria :(",
+        "cy": "Does neb yn siarad i {user}, bywyd mor unig :(",
         "nl": "Niemand praat eens met {user}, wat een eenzaam leventje :("
     },
     "out_mentions": {
         "en": "{user} mentions most ({chan}, since {start}): {list}",
         "na'vi":"krra {user} plltxe nìtxan ({chan} takrra {start}): {list}",
         "es": "Los usarios más mencionados por {user} ({chan}, desde {start}) son: {list}",
+        "cy": "Y rhan fwyaf o sôn gan {user} ({chan}, ers {start}): {list}",
         "nl": "{user} haalt het meeste aan: ({chan}, sinds {start}): {list}"
     },
     "no_out_mentions": {
         "en": "{user} doesn't seem to have mentioned anyone, how sad :(",
         "na'vi": "{user} ke peng kawturu, fìkem (fu kekem) lu keftxo :(",
         "es": "No parece que {user} haya mencionado nadie, qué triste :(",
+        "cy": "Ymddengys {user} wedi crybwyll nad oes neb, pa mor drist :(",
         "nl": "{user} lijkt nog niemand aangehaald te hebben, best wel triest :("
     },
     "popular": {
         "en": "Most mentioned users in {chan} since {start}: {list}",
         "na'vi": "{list} pängkxo nìhawng mì {chan} (takrra {start})",
         "es": "Los usarios más mencionados en {chan} desde {start}: {list}",
+        "cy": "Defnyddwyr sy'n grybwyllir mwyaf yn {chan} ers {start}: {list}",
         "nl": "Meest aangehaalde gebruikers in {chan} sinds {start}: {list}"
     },
     "verbose": {
         "en": "Most verbose users in {chan} since {start}: {list}",
         "na'vi": "sutel pivlltxe mì {chan} nìtxan krrta {start} lu {list}",
         "es": "Los usarios más verbosos en {chan} desde {start}: {list}",
+        "cy": "Defnyddwyr sy'n amleiriog mwyaf yn {chan} ers {start}: {list}",
         "nl": "Meest verbose gebruikers in {chan} sinds {start}: {list}"
     },
     "wordiest": {
         "en": "Most 'wordiest' users in {chan} since {start}: {list}",
         "es": "Los usarios que han dicho las más palabras en {chan} desde {start}: {list}",
+        "cy": "Defnyddwyr sy'n amleiriog mwyaf y linell yn {chan} ers {start}: {list}",
         "nl": "Meest 'mondige' gebruikers in {chan} sinds {start}: {list}"
     },
     "user_last": {
         "en": "{user} was last seen in {chan} {last}",
         "na'vi": "Oel tse'a {user}it mì {chan} - {last}",
         "es": "{user} fue vist@ últimamente en {chan} {last}",
+        "cy": "{user} ei weld ddiwethaf yn {chan} {last}",
         "nl": "{user} is voor het laatst gezien in {chan} {last}"
     },
     "chan_last": {
         "en": "Last activity in {chan} recorded {last}",
         "na'vi": "{last} lamu tìpängkxo mì {chan}",
         "es": "Última actividad en {chan} recordado {last}",
+        "cy": "Gweithgaredd olaf yn {chan} ei gofnodi {last}",
         "nl": "Laatste activiteit {chan} vond plaats {last}"
     }
 }
