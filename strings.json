@@ -62,7 +62,7 @@
         "cy": "{user} a grybwyllwyd fwyaf gan ({chan}, ers {start}): {list}",
         "nl": "{user} meest aangehaald door ({chan}, sinds {start}): {list}"
     },
-    "no_in_mentions":
+    "no_in_mentions": {
         "en": "No-one talks to {user}, what a lonely life :(",
         "na'vi": "kawtu pameng {user}ur taluna kxawm fìtute keftxo 'efängu :(",
         "en": "Nadie habla con {user}, qué vida más solitaria :(",
