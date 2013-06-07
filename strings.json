@@ -5,7 +5,7 @@
         "es": "{user} ha dicho {lines} mensajes en {chan} desde {start}",
         "cy": "{user} wedi siarad {lines} neges yn {chan} ers {start}",
         "nl": "{user} heeft {lines} berichten verzonden in {chan} sinds {start}",
-        "de": "{user} hat {lines} Mitteilungen in {chan} seit {start} geschrieben
+        "de": "{user} hat {lines} Mitteilungen in {chan} seit {start} geschrieben"
     },
     "chan_lines": {
         "en": "I've read {lines} messages in {chan} since {start}",
